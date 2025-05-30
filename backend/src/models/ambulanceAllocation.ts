@@ -1,21 +1,26 @@
-const mongoose = require('mongoose')
-import crewShiftSchema from './crewShifts'
-
-const ambAllocationSchema = new mongoose.Schema({
-    ambulanceId: {
+import mongoose, { Schema } from 'mongoose';
+import { ambulanceStatus, ambulanceType } from '../common/constants';
+ 
+const ambulances = new mongoose.Schema({
+    vehicleNumber: {
         type: String,
-        required: true
-    }, ambulanceType: {
+        required: [true, 'Vehicle number is required'],
+        unique: true,
+        trim: true
+    },
+    ambulanceType: {
         type: String,
-        required: true,
-        enum: ['Basic', 'ICU', 'Neonatal']
-    }, status: {
+        enum: ambulanceType
+    },
+    status: {
         type: String,
-        required: true,
-        enum: ['Available', 'Not available'],
+        enum: ambulanceStatus,
         default: 'Available'
-    }, crewDetails: [crewShiftSchema]
+    },
+},
+{
+    timestamps: true
 })
-
-export default ambAllocationSchema.model('AmbulanceAllocation', ambAllocationSchema)
-
+ 
+ 
+export default mongoose.model('Ambulances', ambulances);

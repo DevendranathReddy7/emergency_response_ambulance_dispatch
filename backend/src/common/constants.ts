@@ -1,0 +1,10 @@
+export const gender = ['Male', 'Female'];
+export const emergencyType = ['Accident', 'Cardiac', 'trauma'];
+export const priority = ['1', '2', '3', '4', '5'];
+export const caseStatus = ["Not Assigned", "en_route", "on_scene", "at_hospital", "closed"];
+export const bloodGroup = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+export const ambulanceType = ['Basic', 'ICU', 'Neonatal'];
+export const ambulanceStatus = ['Available', 'Not available'];
+export const shiftType = ['regular', 'emergency_override'];
+export const roles = ['Admin', 'Emergency response staff', 'Triage staff', 'Patient']
+export const staffRoles = ['Admin', 'Emergency response staff', 'Triage staff']

@@ -10,6 +10,6 @@ const crewShiftSchema = new mongoose.Schema({
         enum: ['active', 'resting', 'on-leave'],
         default: 'active'
     }
-});
+},{ timeStamp: true });
 
-export default crewShiftSchema.model(crewShiftSchema, 'crewShiftSchema')
+export default mongoose.model('CrewShift',crewShiftSchema)

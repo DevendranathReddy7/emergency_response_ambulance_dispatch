@@ -1,12 +1,44 @@
-const mongoose = require('mongoose')
+import mongoose, { Schema } from 'mongoose';
+import { caseStatus, emergencyType } from '../common/constants';
 
 const caseSchema = new mongoose.Schema({
-    patientName: { type: String },
-    patientAge: { type: String },
-    patientGender: { type: String, enum: ['Male', 'Female'] },
-    location: { type: String },
-    emergencyType: { type: String, enum: ['Accident', 'Cardiac', 'trauma'] },
-    priority: { type: String, enum: ['1', '2', '3', '4', '5'] }
-})
+    patientDetails: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    location: String,
+    emergencyType: {
+        type: String,
+        required: [true, 'Emergency type is required'],
+        enum: emergencyType
+    },
+    priority: {
+        type: Number,
+        required: [true, 'Priority level is required'],
+        min: 1,
+        max: 5,
+    },
+    status: {
+        type: String,
+        enum: caseStatus,
+    },
+    incidentDescription: String,
+    ambulanceId: {
+        type: Schema.Types.ObjectId,
+        required: 'Ambulances',
+    },
+    crewMembers: [
+        {
+            staffId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                required: true
+            },
+        }
+    ],
+},
+    {
+        timestamps: true
+    })
 
-export default mongoose.model('Books', caseSchema)
+export default mongoose.model('Cases', caseSchema);
