@@ -1,5 +1,5 @@
 
-import type { buttonProps } from '../dataModals/Common';
+import type { buttonProps } from '../../dataModals/Common';
 
 export default function MuiButton({variant, btnType, children,handleBtnClick}:buttonProps) {
   return (

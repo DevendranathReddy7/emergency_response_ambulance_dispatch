@@ -3,10 +3,13 @@ import {
     incidentTypes,
     priorityLevels,
 } from "../../common/constants/constants";
-import DropDown from "../../common/Dropdown";
-import Input from "../../common/Input";
+import DropDown from "../../common/components/Dropdown";
+import Input from "../../common/components/Input";
 import { Grid } from "@mui/material";
 import React, { type ChangeEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getAvailableAmbulances, getAvailableCrewStaff } from "../../common/services/api";
+import type { AmbulanceData } from "../../dataModals/Common";
 
 
 const CaseDetails = ({ errors, state, updateField }: any) => {
@@ -21,6 +24,44 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
         updateField(name, value)
     }
 
+    const { data: ambulanceData, isLoading: isAmbulanceLoading, isError: isAmbulanceError } = useQuery({
+        queryKey: ['get-ambulances'],
+        queryFn: getAvailableAmbulances,
+        staleTime: 1* 60 * 1000,
+    });
+
+    const { data: crewData, isLoading: isCrewLoading, isError: isCrewError } = useQuery({
+        queryKey: ['get-crew'],
+        queryFn: getAvailableCrewStaff,
+        staleTime: 1 * 60 * 1000,
+
+    });
+
+
+    const renderAmbulances = () => {
+        if (isAmbulanceLoading) {
+            return ['Please wait while we\'re loading'];
+        } else if (isAmbulanceError) {
+            return ['Failed to fetch available ambulances'];
+        } else {
+            return ambulanceData?.data?.data?.map((ambulance: AmbulanceData) => {
+                return `${ambulance.vehicleNumber} - ${ambulance.ambulanceType}`;
+            }) || [];
+        }
+    };
+
+    const renderCrewMembers = () => {
+        if (isCrewLoading) {
+            return ['Please wait while we\'re loading'];
+        } else if (isCrewError) {
+            return ['Failed to fetch available crew members'];
+        } else {
+            return crewData?.data?.data?.map((crew: any) => {
+                return `${crew.name} - ${crew.email}`;
+            }) || [];
+        }
+    };
+
     return (
         <React.Fragment>
             <h2 className="text-2xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5">Case Details</h2>
@@ -31,6 +72,7 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
                         name="emergencyType"
                         selectHandle={selectHandler}
                         menuItems={incidentTypes}
+                        value={state.emergencyType}
                         error={errors.emergency__type?.error}
                         helperText={errors.emergency__type?.message}
                     />
@@ -53,6 +95,7 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
                     <DropDown
                         fieldName="Priority"
                         name="priority"
+                        value={state.priority}
                         selectHandle={selectHandler}
                         menuItems={priorityLevels}
                         error={errors.priority?.error}
@@ -65,6 +108,7 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
                         fieldName="Case Status"
                         name="caseStatus"
                         menuItems={caseStatus}
+                        value={state.caseStatus}
                         selectHandle={selectHandler}
                         error={errors.case__status?.error}
                         helperText={errors.case__status?.message}
@@ -75,12 +119,27 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
                     <DropDown
                         fieldName="Assign Ambulance"
                         name="ambulanceId"
-                        menuItems={priorityLevels}
+                        menuItems={renderAmbulances()}
+                        value={state.ambulanceId}
+                        selectHandle={selectHandler}
+                        error={errors.assign__ambulance?.error}
+                        helperText={errors.assign__ambulance?.message}
+                    />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
+                    <DropDown
+                        fieldName="crew Details"
+                        name="crewDetails"
+                        menuItems={renderCrewMembers()}
+                        value={state.crewMembers[0]}
                         selectHandle={selectHandler}
                         error={errors.priority?.error}
                         helperText={errors.priority?.message}
                     />
                 </Grid>
+
+
             </Grid>
         </React.Fragment>
     )

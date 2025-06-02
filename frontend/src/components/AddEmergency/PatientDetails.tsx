@@ -1,12 +1,12 @@
 import { Grid } from "@mui/material";
-import Input from "../../common/Input";
+import Input from "../../common/components/Input";
 import React, { type ChangeEvent } from "react";
-import DropDown from "../../common/Dropdown";
+import DropDown from "../../common/components/Dropdown";
 import { gender } from "../../common/constants/constants";
 
 const PatientDetails = ({ errors, state, updateField }: any) => {
 
-   
+
 
     const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
         const { value, name } = e.target
@@ -22,18 +22,6 @@ const PatientDetails = ({ errors, state, updateField }: any) => {
         <React.Fragment>
             <h2 className="text-2xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5">Patient Details</h2>
             <Grid container spacing={3} margin={3}>
-                <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
-                    <Input
-                        label="Patient Mobile"
-                        name="patientMobile"
-                        changeHandle={changeHandler}
-                        value={state.patientMobile}
-                        id="patient__mobile"
-                        datatestid="patient__mobile"
-                    // error={errors.patient__name?.error}
-                    // helperText={errors.patient__name?.message}
-                    />
-                </Grid>
 
                 <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
                     <Input
@@ -43,19 +31,36 @@ const PatientDetails = ({ errors, state, updateField }: any) => {
                         value={state.patientName}
                         id="patient__name"
                         datatestid="patient__name"
-                    // error={errors.patient__name?.error}
-                    // helperText={errors.patient__name?.message}
+                        // error={errors.patient__name?.error}
+                        // helperText={errors.patient__name?.message}
                     />
                 </Grid>
+
+
+                <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
+                    <Input
+                        label="Patient Mobile"
+                        name="patientMobile"
+                        changeHandle={changeHandler}
+                        value={state.patientMobile}
+                        id="patient__mobile"
+                        datatestid="patient__mobile"
+                        error={errors.patient__mobile?.error}
+                        helperText={errors.patient__mobile?.message}
+                    />
+                </Grid>
+
+
 
                 <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
                     <DropDown
                         fieldName="Gender"
-                        name="gender"
+                        name="patientGender"
                         menuItems={gender}
+                        value={state.patientGender}
                         selectHandle={selectHandler}
-                        error={errors.gender?.error}
-                        helperText={errors.gender?.message}
+                        error={errors.patient__gender?.error}
+                        helperText={errors.patient__gender?.message}
                     />
                 </Grid>
 

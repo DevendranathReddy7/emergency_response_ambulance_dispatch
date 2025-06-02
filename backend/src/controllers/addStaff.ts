@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import user from "../models/user";
 import { roles, staffRoles } from "../common/constants";
 
-const addStaff = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, name, role, contactDetails: { mobile } } = req.body;
+export const addStaff = async (req: Request, res: Response, next: NextFunction) => {
+    const { email, name, role,  mobile  } = req.body;
 
     try {
         if (!email && staffRoles.includes(role)) {
@@ -30,9 +30,9 @@ const addStaff = async (req: Request, res: Response, next: NextFunction) => {
             return res.status(400).json({ error: 'Staff mobile number is required' });
         }
 
-        const newUserObject = {
+        const newUserObject = await new user({
             ...req.body
-        }
+        })
 
         if (!staffRoles.includes(role)) {
             newUserObject.password = name.slice(0, 4) + Math.floor(Math.random() * 1000)
@@ -45,4 +45,12 @@ const addStaff = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export default addStaff;
+export const getCrewMembers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const availableCrewMembers = await user.find({ role: 'Emergency response staff', status: "Active" })
+        res.status(200).json({ data: availableCrewMembers })
+    } catch (e: any) {
+        res.status(500).json({ message: 'Failed to retrive available crew members. Please try again later', error: e.message });
+
+    }
+}

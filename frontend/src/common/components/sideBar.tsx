@@ -47,8 +47,12 @@ const SideBar = () => {
     const renderLinks = () => {
         return (
             <>
-                <div className="hover:bg-blue-700 hover:text-white p-2 rounded">
-                    <Link to='/log-emergency' onClick={() => handleModal(false)}>Log a Case</Link>
+                <div className="hover:bg-blue-800 border-white hover:text-white p-2 rounded">
+                    <Link to='/log-emergency' onClick={() => handleModal(false)}>Log Case</Link>
+                </div>
+
+                <div className="hover:bg-blue-800 border-white hover:text-white p-2 rounded">
+                    <Link to='/add-user' onClick={() => handleModal(false)}>Add Staff</Link>
                 </div>
             </ >
         )

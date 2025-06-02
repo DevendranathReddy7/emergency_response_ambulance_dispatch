@@ -20,7 +20,9 @@ export interface dropDownProps {
   fieldName: string;
   error?: boolean,
   helperText?: string
-  selectHandle: (e: ChangeEvent<HTMLSelectElement>) => void
+  value:string
+  selectHandle: (event: ChangeEvent<HTMLSelectElement>) => void;
+  //(event: SelectChangeEvent)
 }
 
 export interface UIErrors {
@@ -31,5 +33,15 @@ export interface buttonProps {
   variant: 'contained' | 'outlined' | 'text'
   btnType: 'submit' | 'button'
   children: React.ReactNode
-  handleBtnClick: () => void
+  handleBtnClick?: () => void
+}
+
+export interface AmbulanceData {
+  _id: string;
+  vehicleNumber: string;
+  ambulanceType: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }

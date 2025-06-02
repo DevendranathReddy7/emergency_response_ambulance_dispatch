@@ -1,6 +1,6 @@
 import { useReducer, useState, type FormEvent } from "react";
 
-import MuiButton from "../../common/MuiButton";
+import MuiButton from "../../common/components/MuiButton";
 import PatientDetails from "./PatientDetails";
 import CaseDetails from "./CaseDetails";
 import type { UIErrors } from "../../dataModals/Common";
@@ -9,7 +9,6 @@ const intialState = {
     incidentLocation: "",
     emergencyType: "",
     priority: "",
-    status: "",
     incidentDescription: "",
     ambulanceId: "",
     crewMembers: [],
@@ -17,12 +16,21 @@ const intialState = {
     patientAge: '',
     patientMobile: '',
     patientGender: '',
-    patientAddress: ''
+    patientAddress: '',
+    caseStatus: ''
 };
 
-function reducer(state: any, action: any) {
-            console.log(action)
+const nameToErrorMap: { [key: string]: keyof UIErrors | undefined } = {
+    patientGender: 'patient__gender',
+    patientMobile: 'patient__mobile',
+    incidentLocation: 'incident__location',
+    emergencyType: "emergency__type",
+    priority: "priority",
+    ambulanceId: "assign__ambulance",
+    caseStatus: 'case__status'
+}
 
+function reducer(state: any, action: any) {
     switch (action.type) {
         // case 'SET_ALL':
         //     return { ...state, ...action.payload }
@@ -34,7 +42,7 @@ function reducer(state: any, action: any) {
 }
 
 const AddEmergency: React.FC = () => {
-    const [currentView, setCurrentView] = useState<'caseDetails' | 'patientDetails'>('caseDetails')
+    const [currentView, setCurrentView] = useState<'caseDetails' | 'patientDetails'>('patientDetails')
 
     const [errors, setErrors] = useState<UIErrors>({
         incident__location: {
@@ -54,6 +62,10 @@ const AddEmergency: React.FC = () => {
         patient__gender: {
             error: false,
             message: "Please enter the patient gender",
+        },
+        patient__mobile: {
+            error: false,
+            message: "Mobile number can only be a number"
         }
     });
 
@@ -61,18 +73,61 @@ const AddEmergency: React.FC = () => {
 
     const changeHandler = (name: string, value: string) => {
         dispatch({ type: 'UPDATE_FIELD', name, value })
+        // if (name === 'patientMobile') {
+        //     if (!/^[0-9]+$/.test(value)) {
+        //         console.log(/^[0-9]+$/.test(value), name,value,'2--->')
+        //         setErrors(prevErr => ({
+        //             ...prevErr,
+        //             [nameToErrorMap[name] as keyof UIErrors]: {
+        //                 ...prevErr[nameToErrorMap[name] as keyof UIErrors],
+        //                 error: true,
+        //             },
+        //         }));
+        //     }
+        // }
+
+        if (value !== '' || value !== undefined) {
+            setErrors(prevErr => ({
+                ...prevErr,
+                [nameToErrorMap[name] as keyof UIErrors]: {
+                    ...prevErr[nameToErrorMap[name] as keyof UIErrors],
+                    error: false,
+                },
+            }));
+        }
     }
 
+    const validatePatentDetails = () => {
+        if (state.patientGender === undefined || state.patientGender.trim() === "") {
+            setErrors((prev) => ({
+                ...prev,
+                patient__gender: { ...prev.patient__gender, error: true },
+            }));
+        } else {
+            setErrors((prev) => ({
+                ...prev,
+                patient__gender: { ...prev.patient__gender, error: false },
+            }));
+            setCurrentView('caseDetails')
+        }
+    };
+
+
     const nextBtnClickHandler = () => {
-        setCurrentView('patientDetails')
+        validatePatentDetails()
     }
 
     const backBtnClickHandler = () => {
-        setCurrentView('caseDetails')
+        setCurrentView('patientDetails')
     }
+
+    const validateCaseDetails = () => {
+
+    };
 
     const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        validateCaseDetails()
     };
 
     return (
@@ -80,11 +135,12 @@ const AddEmergency: React.FC = () => {
             <form onSubmit={submitHandler} >
                 {currentView === 'caseDetails' && <CaseDetails errors={errors} state={state} updateField={changeHandler} />}
 
-                {currentView === 'patientDetails' && <PatientDetails errors={errors} state={state} updateField={changeHandler}/>}
+                {currentView === 'patientDetails' && <PatientDetails errors={errors} state={state} updateField={changeHandler} />}
 
-                <div className={`flex justify-between mx-6 ${currentView === 'caseDetails' ? 'justify-end' : ''}`}>
-                    {currentView === 'patientDetails' && <MuiButton btnType="button" variant="outlined" handleBtnClick={backBtnClickHandler}>Back</MuiButton>}
-                    <MuiButton btnType={currentView === 'patientDetails' ? 'submit' : 'button'} variant="contained" handleBtnClick={nextBtnClickHandler}>{currentView === 'patientDetails' ? "Log Case" : "Next"}</MuiButton>
+                <div className={`flex justify-between mx-6 ${currentView === 'patientDetails' ? 'justify-end' : ''}`}>
+                    {currentView === 'caseDetails' && <MuiButton btnType="button" variant="outlined" handleBtnClick={backBtnClickHandler}>Back</MuiButton>}
+                    {currentView === 'patientDetails' && <MuiButton btnType='button' variant="contained" handleBtnClick={nextBtnClickHandler}>Next</MuiButton>}
+                    {currentView === 'caseDetails' && <MuiButton btnType='submit' variant="contained" >Log Case</MuiButton>}
                 </div>
 
             </form>
