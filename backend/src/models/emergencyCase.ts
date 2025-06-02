@@ -6,7 +6,7 @@ const caseSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
-    location: String,
+    incidentLocation: String,
     emergencyType: {
         type: String,
         required: [true, 'Emergency type is required'],

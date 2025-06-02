@@ -1,14 +1,21 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Dashboard from "./components/dashboard";
+import AddEmergency from "./components/AddEmergency";
+import SideBar from "./common/sideBar";
+import store from "./store/store";
+import { Provider } from "react-redux";
+
 
 function App() {
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-      </Routes>
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter >
+        <SideBar />
+        <Routes>
+          <Route path="/log-emergency" element={<AddEmergency />} />
+        </Routes>
+      </BrowserRouter>
+    </Provider>
   )
 }
 

@@ -1,13 +1,11 @@
-import type { inputProps } from "../dataModals/Common"
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import type { inputProps } from '../dataModals/Common';
 
-const Input: React.FC<inputProps> = ({ type,name, placeholder,changeHandle, value, id, datatestid, errorMessage }) => {
-    return (
-        <div className="w-full sm:w-[40%] mb-3 sm:mb-0">
-            <label htmlFor={id}>{name}</label>
-            <input name={name} className="border-2 border-style-solid rounded-md h-15 w-full" type={type} placeholder={placeholder} onChange={changeHandle} value={value} id={id} data-testid={datatestid}/>
-            {errorMessage && <p className="text-red-500 text-sm mx-auto ">{errorMessage}</p>}
-        </div>
-    )
+export default function Input({ id, label, name, value, datatestid, error, helperText,changeHandle }: inputProps) {
+  return (
+    <Box>
+      <TextField sx={{ width: '100%' }} id={id} name={name} label={label} value={value} data-testid={datatestid} error={error} helperText={error ? helperText : ''} onChange={changeHandle} />
+    </Box>
+  );
 }
-
-export default Input

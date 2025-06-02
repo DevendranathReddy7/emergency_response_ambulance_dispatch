@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { roles } from "../common/constants";
+import { gender, roles, shiftType } from "../common/constants";
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -31,6 +31,31 @@ const userSchema = new mongoose.Schema({
         default: 5,
         required: false
     },
+    shiftType: {
+        type: String,
+        enum: shiftType,
+    },
+    shiftStartTime: {
+        type: Date,
+    },
+    shiftEndTime: {
+        type: Date,
+    },
+    age:{
+        type: String,
+    },
+    gender: {
+        type: String,
+        enum: gender
+    },
+    mobile: {
+        type: String,
+        unique:true
+    },
+    address: {
+        type: String,
+        trim: true
+    }
 }, {
     timestamps: true
 })
