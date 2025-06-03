@@ -16,6 +16,7 @@ export default function DropDown({ fieldName, name, menuItems, error, helperText
                     id={`dropDown__${name}`}
                     label={name}
                     value={value}
+                    // @ts-ignore
                     onChange={selectHandle}
                     name={name}
                 >

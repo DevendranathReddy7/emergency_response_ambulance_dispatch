@@ -1,27 +1,29 @@
 import { NextFunction, Request, Response } from "express";
 import emergencyCase from "../models/emergencyCase";
 import user from "../models/user";
+import { priorityLevel } from "../common/constants";
+import ambulanceAllocation from "../models/ambulance";
 
 const emergencyLogger = async (req: Request, res: Response, next: NextFunction) => {
     const { priority, ambulanceId, crewMembers } = req.body;
-    const { staffIds } = crewMembers || {};
-
-    const staffMongoId = staffIds.map(async (staff: string) => {
+    const staffMongoId = crewMembers.map(async (staff: string) => {
         const parts = staff.split('-');
-        const email = parts[1].trim();
-        try {
-            const userResult = await user.findOne({ email, role: { $ne: 'Patient' } });
-            return userResult;
-        } catch (error) {
-            console.error(`Error finding user with emailId ${email}:`, error);
-            return null;
+        const email = parts[1]?.trim();
+        if (email) {
+            try {
+                const userResult = await user.findOne({ email, role: { $ne: 'Patient' } });
+                return userResult;
+            } catch (error) {
+                console.error(`Error finding user with emailId ${email}:`, error);
+                return null;
+            }
         }
     });
 
     const staffUsers = await Promise.all(staffMongoId);
 
     try {
-        if (!priority || !['1', '2', '3', '4', '5'].includes(priority)) {
+        if (!priority || !priorityLevel.includes(priority)) {
             return res.status(400).json({ error: 'Priority is required and must be a value from 1 (Highest) to 5 (Lowest).' });
         }
 
@@ -29,12 +31,22 @@ const emergencyLogger = async (req: Request, res: Response, next: NextFunction) 
             return res.status(400).json({ error: 'Ambulance assignment is required for this case.' });
         }
 
-        if (!staffIds || staffIds.length < 1 || staffIds.length > 2) {
-            return res.status(400).json({ error: 'Please assign at least one and at most two staff members to this case.' });
+        const ambulanceMongoObj = await ambulanceAllocation.findOne({ vehicleNumber: ambulanceId }).select('_id').lean();
+        let ambulanceMongoId
+        if (ambulanceMongoObj) {
+            ambulanceMongoId = ambulanceMongoObj._id;
+        }
+        //  else {
+        //     console.log("Ambulance with vehicle number", ambulanceId, "not found.");
+        // }
+
+        if (!crewMembers) {
+            return res.status(400).json({ error: 'Please assign the staff members to this case.' });
         }
 
         const newCase = await new emergencyCase({
-            ...req.body, crewMembers: { ...crewMembers, staffIds: staffUsers }
+            //@ts-ignore
+            ...req.body, ambulanceId: ambulanceMongoId, crewMembers:staffUsers._id 
         });
 
         await newCase.save();

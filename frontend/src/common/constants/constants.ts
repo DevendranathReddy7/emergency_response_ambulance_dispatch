@@ -18,7 +18,8 @@
 //     { value: "at_hospital", label: "At Hospital" },
 //     { value: "closed", label: "Closed" },
 // ];
-export const incidentTypes = ['Cardic', 'Accident', 'Trauma']
+export const incidentTypes = ['Accident', 'Cardiac', 'trauma'];
 export const priorityLevels = ['1 - Highest','2 - High','3 - Medium','4 - Low','5 - Least']
 export const caseStatus = ["Not Assigned", "On the Way", "On Scene", "At Hospital", "Closed"];
 export const gender = ['Male', 'Female']
+export const roles = ['Admin', 'Emergency response staff', 'Triage staff', 'Patient']

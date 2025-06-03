@@ -6,14 +6,15 @@ import {
 import DropDown from "../../common/components/Dropdown";
 import Input from "../../common/components/Input";
 import { Grid } from "@mui/material";
-import React, { type ChangeEvent } from "react";
+import React, {  type ChangeEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAvailableAmbulances, getAvailableCrewStaff } from "../../common/services/api";
 import type { AmbulanceData } from "../../dataModals/Common";
+//import MuiButton from "../../common/components/MuiButton";
 
 
 const CaseDetails = ({ errors, state, updateField }: any) => {
-
+    //const [showExtraCrew, setShowExtraCrew] = useState<boolean>(false)
     const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         updateField(name, value)
@@ -27,7 +28,7 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
     const { data: ambulanceData, isLoading: isAmbulanceLoading, isError: isAmbulanceError } = useQuery({
         queryKey: ['get-ambulances'],
         queryFn: getAvailableAmbulances,
-        staleTime: 1* 60 * 1000,
+        staleTime: 1 * 60 * 1000,
     });
 
     const { data: crewData, isLoading: isCrewLoading, isError: isCrewError } = useQuery({
@@ -61,6 +62,23 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
             }) || [];
         }
     };
+
+    // const renderExtraCrewMembers = () => {
+    //     if (isCrewLoading) {
+    //         return ['Please wait while we\'re loading'];
+    //     } else if (isCrewError) {
+    //         return ['Failed to fetch available crew members'];
+    //     } else {
+    //         const selectedCrewEmail = state.crewMembers[0]?.staff1?.split('-')[1]?.trim();
+    //         return crewData?.data?.data?.filter((crew: any) => crew.email !== selectedCrewEmail).map((crew: any) => {
+    //             return `${crew.name} - ${crew.email}`;
+    //         }) || [];
+    //     }
+    // };
+
+    // const addoneMoreCrew = () => {
+    //     setShowExtraCrew(prev => !prev)
+    // }
 
     return (
         <React.Fragment>
@@ -129,17 +147,29 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
 
                 <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
                     <DropDown
-                        fieldName="crew Details"
-                        name="crewDetails"
+                        fieldName="crew Members"
+                        name="crewMembers"
                         menuItems={renderCrewMembers()}
                         value={state.crewMembers[0]}
                         selectHandle={selectHandler}
-                        error={errors.priority?.error}
-                        helperText={errors.priority?.message}
+                    // error={errors.priority?.error}
+                    // helperText={errors.priority?.message}
                     />
                 </Grid>
 
+                {/* {showExtraCrew && <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
+                    <DropDown
+                        fieldName="Extra Crew Members"
+                        name="crewMembers_staff2"
+                        menuItems={renderExtraCrewMembers()}
+                        value={state.crewMembers[1].staff2}
+                        selectHandle={selectHandler}
+                    // error={errors.priority?.error}
+                    // helperText={errors.priority?.message}
+                    />
+                </Grid>}
 
+                <MuiButton btnType="button" variant="contained" handleBtnClick={addoneMoreCrew}>{showExtraCrew ? 'Remove Extra Crew Member' : 'Add Extra Crew Member'}</MuiButton> */}
             </Grid>
         </React.Fragment>
     )

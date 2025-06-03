@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import ambulanceAllocation from "../models/ambulanceAllocation";
+import ambulance from "../models/ambulance";
 
 export const addAmbulance = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const newAmbulance = await new ambulanceAllocation({
+        const newAmbulance = await new ambulance({
             ...req.body
         })
 
@@ -17,7 +17,7 @@ export const addAmbulance = async (req: Request, res: Response, next: NextFuncti
 
 export const getAmbulance = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const availableAmbulance = await ambulanceAllocation.find({ status: 'Available' });
+        const availableAmbulance = await ambulance.find({ status: 'Available' });
         res.status(200).json({ data: availableAmbulance })
     } catch (e) {
         console.error("Error fetching available ambulances:", e);

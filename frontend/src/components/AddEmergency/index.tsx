@@ -4,12 +4,14 @@ import MuiButton from "../../common/components/MuiButton";
 import PatientDetails from "./PatientDetails";
 import CaseDetails from "./CaseDetails";
 import type { UIErrors } from "../../dataModals/Common";
+import { useMutation } from "@tanstack/react-query";
+import { logEmergencyCase } from "../../common/services/api";
 
 const intialState = {
     incidentLocation: "",
     emergencyType: "",
     priority: "",
-    incidentDescription: "",
+    //incidentDescription: "",
     ambulanceId: "",
     crewMembers: [],
     patientName: '',
@@ -32,10 +34,12 @@ const nameToErrorMap: { [key: string]: keyof UIErrors | undefined } = {
 
 function reducer(state: any, action: any) {
     switch (action.type) {
-        // case 'SET_ALL':
-        //     return { ...state, ...action.payload }
         case "UPDATE_FIELD":
-            return { ...state, [action.name]: action.value };
+            if (action.name === 'crewMembers') {
+                return { ...state, [action.name]: [ ...[action.value]] };
+            } else {
+                return { ...state, [action.name]: action.value };
+            }
         default:
             return state;
     }
@@ -122,12 +126,30 @@ const AddEmergency: React.FC = () => {
     }
 
     const validateCaseDetails = () => {
-
+        let validationError = false
+        if (state.crewMembers[0] === state.crewMembers[1]) {
+            validationError = true
+        }
+        return validationError
     };
+
+    const { mutate, reset } = useMutation({
+        mutationFn: (payload) => logEmergencyCase(payload),
+        onSuccess: (data) => {
+            console.log('Successfully logged:', data);
+            reset();
+        },
+        onError: (err) => {
+            console.error('Error logging:', err);
+        },
+    });
 
     const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        validateCaseDetails()
+        const isError = validateCaseDetails()
+        if (!isError) {
+            mutate(state);
+        }
     };
 
     return (

@@ -45,3 +45,13 @@ export interface AmbulanceData {
   updatedAt: string;
   __v: number;
 }
+
+export interface UserState {
+  name: string;
+  email: string;
+  gender: string;
+  mobile: string;
+  address: string;
+  role: string;
+  age: string;
+}

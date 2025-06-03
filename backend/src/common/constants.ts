@@ -1,6 +1,6 @@
 export const gender = ['Male', 'Female'];
 export const emergencyType = ['Accident', 'Cardiac', 'trauma'];
-export const priority = ['1', '2', '3', '4', '5'];
+export const priorityLevel = ['1 - Highest','2 - High','3 - Medium','4 - Low','5 - Least']
 export const caseStatus = ["Not Assigned", "en_route", "on_scene", "at_hospital", "closed"];
 export const bloodGroup = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 export const ambulanceType = ['Basic', 'ICU', 'Neonatal'];

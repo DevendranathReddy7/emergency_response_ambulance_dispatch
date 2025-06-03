@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { caseStatus, emergencyType } from '../common/constants';
+import { caseStatus, emergencyType, priorityLevel } from '../common/constants';
 
 const caseSchema = new mongoose.Schema({
     patientDetails: {
@@ -13,10 +13,9 @@ const caseSchema = new mongoose.Schema({
         enum: emergencyType
     },
     priority: {
-        type: Number,
+        type: String,
         required: [true, 'Priority level is required'],
-        min: 1,
-        max: 5,
+        enum: priorityLevel
     },
     status: {
         type: String,
@@ -25,17 +24,13 @@ const caseSchema = new mongoose.Schema({
     incidentDescription: String,
     ambulanceId: {
         type: Schema.Types.ObjectId,
-        required: 'Ambulances',
+        ref: 'Ambulances',
     },
-    crewMembers: [
-        {
-            staffId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User',
-                required: true
-            },
-        }
-    ],
+    crewMembers: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
 },
     {
         timestamps: true

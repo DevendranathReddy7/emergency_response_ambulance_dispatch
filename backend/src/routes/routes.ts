@@ -1,5 +1,5 @@
-import {addAmbulance, getAmbulance} from "../controllers/addAmbulance"
-import {addStaff, getCrewMembers} from "../controllers/addStaff"
+import {addAmbulance, getAmbulance} from "../controllers/addGetAmbulance"
+import {addStaff, getCrewMembers} from "../controllers/addGetStaff"
 import emergencyLogger from "../controllers/emergencyLogger"
 
 const express  = require('express')
