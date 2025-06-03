@@ -4,8 +4,12 @@ export const getAvailableAmbulances = async () => {
     try {
         return await axios.get('http://localhost:7000/api/get-ambulance')
 
-    } catch (e) {
-
+    } catch (error: any) {
+        if (error.response && error.response.data && error.response.data.error) {
+            throw new Error(error.response.data.error);
+        } else {
+            throw new Error(error.message || 'Failed to fetch avaialble ambulances')
+        }
     }
 
 }
@@ -14,20 +18,41 @@ export const getAvailableCrewStaff = async () => {
     try {
         return await axios.get('http://localhost:7000/api/get-crewMembers')
 
-    } catch (e) {
-
+    } catch (error: any) {
+        if (error.response && error.response.data && error.response.data.error) {
+            throw new Error(error.response.data.error);
+        } else {
+            throw new Error(error.message || 'Failed to fetch avaialble crew members')
+        }
     }
 
 }
 
 
-export const logEmergencyCase = async(payload:any) => {
+export const logEmergencyCase = async (payload: any) => {
     try {
-        const response = await axios.post('http://localhost:7000/api/logEmergency',payload
-        );
+        const response = await axios.post('http://localhost:7000/api/logEmergency', payload);
         return response.data;
     } catch (error: any) {
-        console.error('Error logging emergency case:', error);
-        return { success: false, error: error.message || 'Failed to log emergency case' };
+        if (error.response && error.response.data && error.response.data.error) {
+            throw new Error(error.response.data.error);
+        } else {
+            throw new Error(error.message || 'Failed to log emergency case')
+        }
     }
 };
+
+export const addStaff = async (payload: any) => {
+    try {
+        const response = await axios.post('http://localhost:7000/api/add-staff', payload);
+        return response.data;
+    } catch (error: any) {
+        if (error.response && error.response.data && error.response.data.error) {
+            throw new Error(error.response.data.error);
+        } else {
+            throw new Error(error.message || 'Failed to add the user');
+        }
+    }
+};
+
+

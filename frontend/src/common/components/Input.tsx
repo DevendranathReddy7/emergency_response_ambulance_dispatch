@@ -7,8 +7,6 @@ export default function Input({ id, label, name, value, datatestid, error, helpe
     <Box>
       {/* <label htmlFor={`dropDown__${name}`}>{label}</label> */}
       <TextField sx={{ width: '100%' }} id={id} name={name} label={label} value={value} data-testid={datatestid} error={error} helperText={error ? helperText : ''} onChange={changeHandle} />
-      {error && <p>{helperText}</p>}
-
     </Box>
   );
 }

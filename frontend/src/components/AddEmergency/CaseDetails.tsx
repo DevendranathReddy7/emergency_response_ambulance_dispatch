@@ -6,10 +6,11 @@ import {
 import DropDown from "../../common/components/Dropdown";
 import Input from "../../common/components/Input";
 import { Grid } from "@mui/material";
-import React, {  type ChangeEvent } from "react";
+import React, { useEffect, type ChangeEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAvailableAmbulances, getAvailableCrewStaff } from "../../common/services/api";
 import type { AmbulanceData } from "../../dataModals/Common";
+import { toast } from "react-toastify";
 //import MuiButton from "../../common/components/MuiButton";
 
 
@@ -38,6 +39,17 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
 
     });
 
+    useEffect(() => {
+        if (isAmbulanceError) {
+            toast.error('Failed to fetch available Ambulance\'s details');
+        }
+    }, [isAmbulanceError]);
+
+    useEffect(() => {
+        if (isCrewError) {
+            toast.error('Failed to fetch available crew members');
+        }
+    }, [isCrewError]);
 
     const renderAmbulances = () => {
         if (isAmbulanceLoading) {
@@ -46,7 +58,7 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
             return ['Failed to fetch available ambulances'];
         } else {
             return ambulanceData?.data?.data?.map((ambulance: AmbulanceData) => {
-                return `${ambulance.vehicleNumber} - ${ambulance.ambulanceType}`;
+                return `${ambulance.vehicleNumber} -- ${ambulance.ambulanceType}`;
             }) || [];
         }
     };
@@ -102,10 +114,10 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
                         name="incidentLocation"
                         changeHandle={changeHandler}
                         value={state.incidentLocation}
-                        id="incident_location"
-                        datatestid="incident_location"
-                        error={errors.incident_location?.error}
-                        helperText={errors.incident_location?.message}
+                        id="incident__location"
+                        datatestid="incident__location"
+                        error={errors.incident__location?.error}
+                        helperText={errors.incident__location?.message}
                     />
                 </Grid>
 
@@ -152,8 +164,8 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
                         menuItems={renderCrewMembers()}
                         value={state.crewMembers[0]}
                         selectHandle={selectHandler}
-                    // error={errors.priority?.error}
-                    // helperText={errors.priority?.message}
+                        error={errors.assign__crew?.error}
+                        helperText={errors.assign__crew?.message}
                     />
                 </Grid>
 

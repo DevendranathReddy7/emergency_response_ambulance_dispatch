@@ -21,16 +21,14 @@ const caseSchema = new mongoose.Schema({
         type: String,
         enum: caseStatus,
     },
-    incidentDescription: String,
     ambulanceId: {
         type: Schema.Types.ObjectId,
         ref: 'Ambulances',
     },
-    crewMembers: {
+    crewMembers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
-    },
+    }],
 },
     {
         timestamps: true

@@ -18,7 +18,7 @@ export const addStaff = async (req: Request, res: Response, next: NextFunction) 
             return res.status(400).json({ error: 'Please remove hypens\'s (-) from the emailId' });
         }
 
-        if (name.length < 4) {
+        if (name.length < 3) {
             return res.status(400).json({ error: 'Name should contains atleast 3 character length' });
         }
 

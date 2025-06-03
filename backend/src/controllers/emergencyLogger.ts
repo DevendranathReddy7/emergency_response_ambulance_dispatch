@@ -2,25 +2,54 @@ import { NextFunction, Request, Response } from "express";
 import emergencyCase from "../models/emergencyCase";
 import user from "../models/user";
 import { priorityLevel } from "../common/constants";
-import ambulanceAllocation from "../models/ambulance";
+import ambulance from "../models/ambulance";
+
+const addPatientDetailsToUser = async (patientName: string, patientAge: string, patientMobile: string, patientGender: string, patientAddress: string, res: Response) => {
+    const isPatientExisted = await user.findOne({ mobile: patientMobile, role: 'Patient' });
+    if (!isPatientExisted) {
+        try {
+            const addPatient = new user({
+                name: patientName,
+                age: patientAge,
+                mobile: patientMobile,
+                gender: patientGender,
+                address: patientAddress,
+                role: 'Patient'
+            })
+
+            await addPatient.save()
+            console.log('Patient added successfully (from addPatientDetailsToUser)');
+        } catch (e: any) {
+            console.error('Failed to add Patient (from addPatientDetailsToUser):', e.message);
+        }
+    } else {
+        console.log('Patient already exists (from addPatientDetailsToUser)');
+    }
+
+}
 
 const emergencyLogger = async (req: Request, res: Response, next: NextFunction) => {
-    const { priority, ambulanceId, crewMembers } = req.body;
-    const staffMongoId = crewMembers.map(async (staff: string) => {
+    const { emergencyType, incidentLocation, priority, ambulanceId, crewMembers, patientName, patientAge, patientMobile, patientGender, patientAddress, caseStatus } = req.body;
+
+    await addPatientDetailsToUser(patientName, patientAge, patientMobile, patientGender, patientAddress, res)
+
+    const staffMongoIdPromises = crewMembers.map(async (staff: string) => {
         const parts = staff.split('-');
         const email = parts[1]?.trim();
         if (email) {
             try {
-                const userResult = await user.findOne({ email, role: { $ne: 'Patient' } });
-                return userResult;
+                const userResult = await user.findOne({ email, role: { $ne: 'Patient' } }).select('_id'); // Select only the _id
+                return userResult ? userResult._id : null;
             } catch (error) {
                 console.error(`Error finding user with emailId ${email}:`, error);
                 return null;
             }
         }
+        return null;
     });
 
-    const staffUsers = await Promise.all(staffMongoId);
+    const resolvedStaffMongoIds = (await Promise.all(staffMongoIdPromises)).filter(id => id !== null);
+
 
     try {
         if (!priority || !priorityLevel.includes(priority)) {
@@ -31,24 +60,24 @@ const emergencyLogger = async (req: Request, res: Response, next: NextFunction) 
             return res.status(400).json({ error: 'Ambulance assignment is required for this case.' });
         }
 
-        const ambulanceMongoObj = await ambulanceAllocation.findOne({ vehicleNumber: ambulanceId }).select('_id').lean();
-        let ambulanceMongoId
-        if (ambulanceMongoObj) {
-            ambulanceMongoId = ambulanceMongoObj._id;
-        }
-        //  else {
-        //     console.log("Ambulance with vehicle number", ambulanceId, "not found.");
-        // }
-
         if (!crewMembers) {
             return res.status(400).json({ error: 'Please assign the staff members to this case.' });
         }
 
-        const newCase = await new emergencyCase({
-            //@ts-ignore
-            ...req.body, ambulanceId: ambulanceMongoId, crewMembers:staffUsers._id 
-        });
+        const ambulanceMongoId = await ambulance.findOne({ vehicleNumber: ambulanceId.split('--')[0].trim() }).select('_id');
+        const patientId = await user.findOne({ mobile: patientMobile, role: 'Patient' }).select('_id')
 
+        const newCase = new emergencyCase({
+            //@ts-ignore
+            ...req.body,
+            emergencyType,
+            incidentLocation,
+            patientDetails: patientId,
+            status: caseStatus,
+            ambulanceId: ambulanceMongoId,
+            crewMembers: resolvedStaffMongoIds
+        });
+        console.log(newCase, '---------------<>=======')
         await newCase.save();
         res.status(201).json({ message: 'Case Logged Successfully', data: newCase.crewMembers });
 

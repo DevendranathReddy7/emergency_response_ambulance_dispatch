@@ -6,6 +6,7 @@ import CaseDetails from "./CaseDetails";
 import type { UIErrors } from "../../dataModals/Common";
 import { useMutation } from "@tanstack/react-query";
 import { logEmergencyCase } from "../../common/services/api";
+import { toast } from "react-toastify";
 
 const intialState = {
     incidentLocation: "",
@@ -29,14 +30,15 @@ const nameToErrorMap: { [key: string]: keyof UIErrors | undefined } = {
     emergencyType: "emergency__type",
     priority: "priority",
     ambulanceId: "assign__ambulance",
-    caseStatus: 'case__status'
+    caseStatus: 'case__status',
+    crewMembers: 'assign__crew'
 }
 
 function reducer(state: any, action: any) {
     switch (action.type) {
         case "UPDATE_FIELD":
             if (action.name === 'crewMembers') {
-                return { ...state, [action.name]: [ ...[action.value]] };
+                return { ...state, [action.name]: [...[action.value]] };
             } else {
                 return { ...state, [action.name]: action.value };
             }
@@ -70,6 +72,9 @@ const AddEmergency: React.FC = () => {
         patient__mobile: {
             error: false,
             message: "Mobile number can only be a number"
+        }, assign__crew: {
+            error: false,
+            message: "Please assign this incident to availble crew members"
         }
     });
 
@@ -126,28 +131,71 @@ const AddEmergency: React.FC = () => {
     }
 
     const validateCaseDetails = () => {
-        let validationError = false
-        if (state.crewMembers[0] === state.crewMembers[1]) {
-            validationError = true
+        let isValid = true;
+        const newErrors = { ...errors };
+
+        if (!state.incidentLocation) {
+            newErrors.incident__location = { error: true, message: "Please enter the incident location" };
+            isValid = false;
+        } else {
+            newErrors.incident__location.error = false;
         }
-        return validationError
+
+        if (!state.emergencyType) {
+            newErrors.emergency__type = { error: true, message: "Please select emergency type" };
+            isValid = false;
+        } else {
+            newErrors.emergency__type.error = false;
+        }
+
+        if (!state.priority) {
+            newErrors.priority = { error: true, message: "Please select the incident priority" };
+            isValid = false;
+        } else {
+            newErrors.priority.error = false;
+        }
+
+        if (!state.caseStatus) {
+            newErrors.case__status = { error: true, message: "Please choose the current status of the case" };
+            isValid = false;
+        } else {
+            newErrors.case__status.error = false;
+        }
+
+        if (!state.ambulanceId) {
+            newErrors.assign__ambulance = { error: true, message: "Please assign an ambulance to the case" };
+            isValid = false;
+        } else {
+            newErrors.assign__ambulance.error = false;
+        }
+
+        if (!state.crewMembers || state.crewMembers.length === 0) {
+            newErrors.assign__crew = { error: true, message: "Please assign at least one crew member" };
+            isValid = false;
+        } else {
+            if (newErrors.assign__crew) newErrors.assign__crew.error = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
     };
 
     const { mutate, reset } = useMutation({
         mutationFn: (payload) => logEmergencyCase(payload),
         onSuccess: (data) => {
-            console.log('Successfully logged:', data);
-            reset();
+            toast.success('Inclident is Successfully logged')
         },
         onError: (err) => {
             console.error('Error logging:', err);
+            toast.error('Failed to log the inclident')
+
         },
     });
 
     const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const isError = validateCaseDetails()
-        if (!isError) {
+        const isValid = validateCaseDetails()
+        if (isValid) {
             mutate(state);
         }
     };
