@@ -5,8 +5,8 @@ import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import type { ModalProps } from '../../dataModals/Common';
 
-export default function BasicModal({isOpen, handleModal}:ModalProps) {
-  console.log(isOpen, 'in modal=-->')
+export default function BasicModal({isOpen, handleModal, data}:ModalProps) {
+  console.log(data)
   return (
     <React.Fragment>
       

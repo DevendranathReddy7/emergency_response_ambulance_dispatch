@@ -4,12 +4,11 @@ import user from "../models/user";
 import { priorityLevel } from "../common/constants";
 import ambulance from "../models/ambulance";
 
-let crewEmail = ''
 
-const addPatientDetailsToUser = async (patientName: string, patientAge: string, patientMobile: string, patientGender: string, patientAddress: string, res: Response) => {
-    const isPatientExisted = await user.findOne({ mobile: patientMobile, role: 'Patient' });
-    if (!isPatientExisted) {
-        try {
+const addPatientDetailsToUser = async (patientName: string, patientAge: string, patientMobile: string, patientGender: string, patientAddress: string) => {
+    try {
+        const isPatientExisted = await user.findOne({ mobile: patientMobile, role: 'Patient' });
+        if (!isPatientExisted) {
             const addPatient = new user({
                 name: patientName,
                 age: patientAge,
@@ -17,20 +16,21 @@ const addPatientDetailsToUser = async (patientName: string, patientAge: string, 
                 gender: patientGender,
                 address: patientAddress,
                 role: 'Patient'
-            })
-
-            await addPatient.save()
+            });
+            await addPatient.save();
             console.log('Patient added successfully (from addPatientDetailsToUser)');
-        } catch (e: any) {
-            console.error('Failed to add Patient (from addPatientDetailsToUser):', e.message);
+            //return true; 
+        } else {
+            console.log('Patient already exists (from addPatientDetailsToUser)');
+            //return true; 
         }
-    } else {
-        console.log('Patient already exists (from addPatientDetailsToUser)');
+    } catch (e: any) {
+        console.error('Failed to add Patient (from addPatientDetailsToUser):', e.message);
+        //return false;
     }
+};
 
-}
-
-const updatePatientDetailsInUser = async (patientName: string, patientAge: string, patientMobile: string, patientGender: string, patientAddress: string, res: Response) => {
+const updatePatientDetailsInUser = async (patientName: string, patientAge: string, patientMobile: string, patientGender: string, patientAddress: string) => {
     try {
         const isPatientExisted = await user.findOne({ mobile: patientMobile, role: 'Patient' });
 
@@ -49,81 +49,94 @@ const updatePatientDetailsInUser = async (patientName: string, patientAge: strin
                 );
                 console.log(`Patient with mobile ${patientMobile} updated successfully.`);
             }
+            //return true;
         } else {
-            console.log(`Patient with mobile ${patientMobile} not found for update.`);
+            addPatientDetailsToUser(patientName, patientAge, patientMobile, patientGender, patientAddress)
+            //console.log(`Patient with mobile ${patientMobile} not found for update.`);
+            //return false; // Or true, depending on if you consider "not found" an error in update context
         }
     } catch (error) {
         console.error(`Error updating patient with mobile ${patientMobile}:`, error);
+        //return false;
     }
-}
+};
 
-const validateFileds = (priority: string, ambulanceId: string, crewMembers: string[], res: Response) => {
+const validateFileds = (priority: string, ambulanceId: string, crewMembers: string[]) => {
     if (!priority || !priorityLevel.includes(priority)) {
-        return res.status(400).json({ error: 'Priority is required and must be a value from 1 (Highest) to 5 (Lowest).' });
+        return 'Priority is required and must be a value from 1 (Highest) to 5 (Lowest).';
     }
 
     if (!ambulanceId) {
-        return res.status(400).json({ error: 'Ambulance assignment is required for this case.' });
+        return 'Ambulance assignment is required for this case.';
     }
 
-    if (!crewMembers) {
-        return res.status(400).json({ error: 'Please assign the staff members to this case.' });
+    if (!crewMembers || crewMembers.length === 0) {
+        return 'Please assign the staff members to this case.';
     }
-}
+    return null;
+};
 
 const resloveCrewIds = (crewMembers: string[]) => {
     const staffMongoIdPromises = crewMembers.map(async (staff: string) => {
         const parts = staff.split('-');
-        crewEmail = parts[1]?.trim();
-        if (crewEmail) {
+        const email = parts[1]?.trim();
+        if (email) {
             try {
-                const userResult = await user.findOne({ email: crewEmail, role: { $ne: 'Patient' } }).select('_id'); // Select only the _id
+                const userResult = await user.findOne({ email: email, role: { $ne: 'Patient' } }).select('_id');
                 return userResult ? userResult._id : null;
             } catch (error) {
-                console.error(`Error finding user with emailId ${crewEmail}:`, error);
+                console.error(`Error finding user with emailId ${email}:`, error);
                 return null;
             }
         }
         return null;
     });
-
-    return staffMongoIdPromises
-
-}
-
-
+    return staffMongoIdPromises;
+};
 
 export const emergencyLogger = async (req: Request, res: Response, next: NextFunction) => {
     const { emergencyType, incidentLocation, priority, ambulanceId, crewMembers, patientName, patientAge, patientMobile, patientGender, patientAddress, caseStatus } = req.body;
 
-    if (patientMobile) {
-        await addPatientDetailsToUser(patientName, patientAge, patientMobile, patientGender, patientAddress, res)
+    const validationError = validateFileds(priority, ambulanceId, crewMembers);
+    if (validationError) {
+        return res.status(400).json({ error: validationError });
     }
 
-
-    const resolvedStaffMongoIds = (await Promise.all(resloveCrewIds(crewMembers))).filter(id => id !== null);
-
     try {
-        validateFileds(priority, ambulanceId, crewMembers, res)
+        if (patientMobile) {
+            const patientAddSuccess = await addPatientDetailsToUser(patientName, patientAge, patientMobile, patientGender, patientAddress);
 
-        const ambulanceMongoId = await ambulance.findOne({ vehicleNumber: ambulanceId.split('--')[0].trim() }).select('_id');
-        const patientId = await user.findOne({ mobile: patientMobile, role: 'Patient' }).select('_id')
-        const crewMember = await user.findOne({ email: crewEmail, role: { $ne: 'Patient' } })
+            // if (!patientAddSuccess) {
+            //     return res.status(500).json({ message: 'Failed to add or verify patient details.' });
+            // }
+        }
+
+        const resolvedStaffMongoIds = (await Promise.all(resloveCrewIds(crewMembers))).filter(id => id !== null);
+
+        const ambulanceMongoDoc = await ambulance.findOne({ vehicleNumber: ambulanceId.split('--')[0].trim() }).select('_id');
+        if (!ambulanceMongoDoc) {
+            return res.status(404).json({ message: 'Assigned ambulance not found.' });
+        }
+        const patientDoc = await user.findOne({ mobile: patientMobile, role: 'Patient' }).select('_id');
+        // if (!patientDoc) {
+        //     // This might happen if addPatientDetailsToUser failed silently or mobile didn't match.
+        //     return res.status(404).json({ message: 'Patient record not found to link with case.' });
+        // }
 
         const newCase = new emergencyCase({
-            ...req.body,
             emergencyType,
             incidentLocation,
-            patientDetails: patientId,
+            priority,
             status: caseStatus,
-            ambulanceId: ambulanceMongoId,
+            patientDetails: patientDoc?._id,
+            ambulanceId: ambulanceMongoDoc._id,
             crewMembers: resolvedStaffMongoIds
         });
         const savedCase = await newCase.save();
 
         if (savedCase) {
             const updateAmbulanceStatus = await ambulance.findByIdAndUpdate(
-                ambulanceMongoId,
+                ambulanceMongoDoc._id,
                 { status: 'Not Available' },
                 { new: true }
             );
@@ -131,62 +144,131 @@ export const emergencyLogger = async (req: Request, res: Response, next: NextFun
             if (updateAmbulanceStatus) {
                 console.log('Ambulance status updated successfully:', updateAmbulanceStatus);
             } else {
-                console.warn('Ambulance not found or not updated for ID:', ambulanceMongoId);
+                console.warn('Ambulance not found or not updated for ID:', ambulanceMongoDoc._id);
             }
 
-            if (crewMember) {
-                const newFatigueLevel = Math.max(0, crewMember.fatigueLevel - 1);
-
-                const updatedCrewMember = await user.findByIdAndUpdate(
-                    crewMember._id,
-                    { fatigueLevel: newFatigueLevel },
-                    { new: true, runValidators: true }
-                );
-
-                if (updatedCrewMember) {
-                    console.log('Fatigue Level is updated:', updatedCrewMember);
-                } else {
-                    console.warn('Failed to update the fatigue level');
+            for (const crewId of resolvedStaffMongoIds) {
+                const crewMemberDoc = await user.findById(crewId);
+                if (crewMemberDoc) {
+                    const newFatigueLevel = Math.max(0, crewMemberDoc.fatigueLevel - 1);
+                    const updatedCrewMember = await user.findByIdAndUpdate(
+                        crewId,
+                        { fatigueLevel: newFatigueLevel },
+                        { new: true, runValidators: true }
+                    );
+                    if (updatedCrewMember) {
+                        console.log(`Fatigue Level updated for crew member ${crewId}:`, updatedCrewMember.fatigueLevel);
+                    } else {
+                        console.warn(`Failed to update fatigue level for crew member ${crewId}`);
+                    }
                 }
             }
-
-
         }
 
-        res.status(201).json({ message: 'Case Logged Successfully', data: newCase.crewMembers });
+        res.status(201).json({ message: 'Case Logged Successfully', data: savedCase });
 
     } catch (e: any) {
+        console.error('Failed to log emergency case due to a server error:', e);
         res.status(500).json({ message: 'Failed to log emergency case due to a server error.', error: e.message });
     }
-}
+};
 
 
 export const updateEmergency = async (req: Request, res: Response, next: NextFunction) => {
     const { emergencyType, incidentLocation, priority, ambulanceId, crewMembers, patientName, patientAge, patientMobile, patientGender, patientAddress, caseStatus, editingDocId } = req.body;
 
-    if (patientMobile) {
-        await updatePatientDetailsInUser(patientName, patientAge, patientMobile, patientGender, patientAddress, res)
+    const validationError = validateFileds(priority, ambulanceId, crewMembers);
+    if (validationError) {
+        return res.status(400).json({ error: validationError });
     }
 
-    const resolvedStaffMongoIds = (await Promise.all(resloveCrewIds(crewMembers))).filter(id => id !== null);
-
     try {
-        validateFileds(priority, ambulanceId, crewMembers, res)
-        const ambulanceMongoId = await ambulance.findOne({ vehicleNumber: ambulanceId.split('--')[0].trim() }).select('_id');
-        const patientId = await user.findOne({ mobile: patientMobile, role: 'Patient' }).select('_id')
+        if (patientMobile) {
+            const patientUpdateSuccess = await updatePatientDetailsInUser(patientName, patientAge, patientMobile, patientGender, patientAddress);
+            // if (!patientUpdateSuccess) {
+            //      console.warn('Could not update patient details, proceeding with case update.');
+            // }
+        }
 
+        const resolvedStaffMongoIds = (await Promise.all(resloveCrewIds(crewMembers))).filter(id => id !== null);
+
+        const existingCase = await emergencyCase.findById(editingDocId);
+        if (!existingCase) {
+            return res.status(404).json({ message: 'Emergency case not found for update.' });
+        }
+
+        const newAmbulanceMongoDoc = await ambulance.findOne({ vehicleNumber: ambulanceId.split('--')[0].trim() }).select('_id');
+        if (!newAmbulanceMongoDoc) {
+            return res.status(404).json({ message: 'New assigned ambulance not found.' });
+        }
+        const newAmbulanceMongoId = newAmbulanceMongoDoc._id;
+
+        const patientDoc = await user.findOne({ mobile: patientMobile, role: 'Patient' }).select('_id');
+        if (!patientDoc) {
+            //return res.status(404).json({ message: 'Patient record not found to link with case.' });
+            console.warn('Patient record not found to link with case.')
+        }
+        const patientId = patientDoc?._id;
+
+
+        // Perform the case update
         const updatedCase = await emergencyCase.findByIdAndUpdate(editingDocId, {
             emergencyType,
             incidentLocation,
             status: caseStatus,
             patientDetails: patientId,
             crewMembers: resolvedStaffMongoIds,
-            ambulanceId: ambulanceMongoId,
+            ambulanceId: newAmbulanceMongoId, // Use the new resolved ID
+            priority, // Ensure priority is included in the update
+        }, { new: true, runValidators: true });
 
-        })
-        res.status(200).json({ message: 'Updated the case details', data: updatedCase })
+        if (!updatedCase) {
+            // This should ideally not happen if existingCase check passed, but as a safeguard.
+            return res.status(500).json({ message: 'Failed to update emergency case.' });
+        }
+
+        //Start --Below code is when we need have an option to change ambulance in Edit
+        if (existingCase.ambulanceId && !existingCase.ambulanceId.equals(newAmbulanceMongoId)) {
+            await ambulance.findByIdAndUpdate(
+                existingCase.ambulanceId,
+                { status: 'Available' },
+                { new: false }
+            );
+            console.log(`Old ambulance (ID: ${existingCase.ambulanceId}) status reverted to 'Available'.`);
+        }
+
+
+        await ambulance.findByIdAndUpdate(
+            newAmbulanceMongoId,
+            { status: 'Not Available' },
+            { new: true }
+        );
+        console.log(`New ambulance (ID: ${newAmbulanceMongoId}) status set to 'Not Available'.`);
+        // End
+
+        const oldCrewMemberIds = existingCase.crewMembers.map((id: any) => id.toString());
+        const newCrewMemberIds = resolvedStaffMongoIds.map((id: any) => id.toString());
+
+        const newlyAssignedCrewIds = newCrewMemberIds.filter((id: string) => !oldCrewMemberIds.includes(id));
+        const removedCrewIds = oldCrewMemberIds.filter((id: string) => !newCrewMemberIds.includes(id));
+
+        for (const crewId of newlyAssignedCrewIds) {
+            const crewMemberDoc = await user.findById(crewId);
+            if (crewMemberDoc) {
+                const newFatigueLevel = Math.max(0, crewMemberDoc.fatigueLevel - 1); 
+                await user.findByIdAndUpdate(
+                    crewId,
+                    { fatigueLevel: newFatigueLevel },
+                    { new: true, runValidators: true }
+                );
+                console.log(`Fatigue Level decreased for newly assigned crew member ${crewId}.`);
+            }
+        }
+
+        res.status(200).json({ message: 'Updated the case details successfully', data: updatedCase });
 
     } catch (e: any) {
+        console.error('Failed to update emergency case due to a server error:', e);
         res.status(500).json({ message: 'Failed to update emergency case due to a server error.', error: e.message });
     }
-}
+};

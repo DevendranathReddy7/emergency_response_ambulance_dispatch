@@ -61,6 +61,7 @@ export interface UserState {
 export interface ModalProps {
   isOpen: boolean
   handleModal: (status: boolean) => void
+  data:any
 }
 
 export interface PaginationProps {

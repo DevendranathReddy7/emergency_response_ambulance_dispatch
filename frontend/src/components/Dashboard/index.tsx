@@ -113,6 +113,7 @@ const Dashboard = () => {
         return value;
     };
 
+
     return (
         <div className="bg-white p-3 rounded border-2 m-3">
             <h2 className="text-1xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5 mb-3">Reported Cases</h2>
