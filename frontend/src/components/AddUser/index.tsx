@@ -143,7 +143,7 @@ const AddUser = () => {
             newErrors.mobile = { error: true, message: 'Mobile number is Required' };
             isValid = false;
         } else {
-            // You might want to add mobile number validation here (e.g., length)
+            // might want to add mobile number validation here (e.g., length)
             newErrors.mobile.error = false;
         }
 

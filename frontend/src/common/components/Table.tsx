@@ -39,7 +39,7 @@ const DynamicTable = ({ data, updateCaseDetails }: TableProps) => {
             const colorClasses = priorityColors[value] || priorityColors.default;
             return (
 
-                <div className={`space-x-2 ${colorClasses.bg} p-1 rounded-md`}>
+                <div className={`space-x-2 ${colorClasses.bg} p-1 sm:py-1 rounded-3xl`}>
                     <p className={`${colorClasses.text}`}>{value}</p>
                 </div>
             );
@@ -48,7 +48,7 @@ const DynamicTable = ({ data, updateCaseDetails }: TableProps) => {
         } else if (typeof value === 'object' && value !== null) {
             return JSON.stringify(value);
         }
-        return value?.toString() ?? '-';
+        return value ? value : '-';
     };
 
     const handleAction = (actionType: string, id: string) => {

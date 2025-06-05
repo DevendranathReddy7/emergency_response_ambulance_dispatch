@@ -20,7 +20,7 @@ export const ShowPagination = ({ pagination,updatePage,prevNext }:PaginationProp
     };
 
     return (
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center mt-10">
             <div
                 className={`mr-2 cursor-pointer ${pagination.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={handlePrev}

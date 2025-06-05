@@ -1,41 +1,32 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
-
-export default function Loader({msg}:any) {
-  const [progress, setProgress] = React.useState(0);
-  const [buffer, setBuffer] = React.useState(10);
-
-  const progressRef = React.useRef(() => {});
-  React.useEffect(() => {
-    progressRef.current = () => {
-      if (progress === 100) {
-        setProgress(0);
-        setBuffer(10);
-      } else {
-        setProgress(progress + 1);
-        if (buffer < 100 && progress % 5 === 0) {
-          const newBuffer = buffer + 1 + Math.random() * 10;
-          setBuffer(newBuffer > 100 ? 100 : newBuffer);
-        }
-      }
-    };
-  });
-
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      progressRef.current();
-    }, 100);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  return (
-    <Box sx={{ width: '100%' }}>
-      <LinearProgress variant="buffer" value={progress} valueBuffer={buffer} />
-      <p className="text-center text-gray-500 py-4">{msg}</p>
-    </Box>
-  );
-}
+import { CircularProgress, Box, Typography } from "@mui/material";
+import type { LoaderProps } from "../../dataModals/Common";
+ 
+const Loader = ({
+  size = 40,
+  thickness = 4,
+  fullScreen = false,
+  msg,
+}: LoaderProps)  => (
+  <Box
+    display="flex"
+    flexDirection="column"
+    justifyContent="center"
+    alignItems="center"
+    height={fullScreen ? "100vh" : "100%"}
+    width="100%"
+    position={fullScreen ? "fixed" : "relative"}
+    top={0}
+    left={0}
+    zIndex={fullScreen ? 1300 : "auto"}
+    bgcolor={fullScreen ? "rgba(255, 255, 255, 0.8)" : "transparent"}
+  >
+    <CircularProgress size={size} thickness={thickness} />
+    {msg && (
+      <Typography variant="body2" mt={2}>
+        {msg}
+      </Typography>
+    )}
+  </Box>
+);
+ 
+export default Loader;

@@ -3,7 +3,7 @@ import user from "../models/user";
 import { roles, staffRoles } from "../common/constants";
 
 export const addStaff = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, name, role,  mobile  } = req.body;
+    const { email, name, role, mobile } = req.body;
 
     try {
         if (!email && staffRoles.includes(role)) {
@@ -11,11 +11,16 @@ export const addStaff = async (req: Request, res: Response, next: NextFunction) 
         }
 
         const isEmailExisted = await user.findOne({ email });
+        const isMobileExisted = await user.findOne({ mobile });
         if (isEmailExisted) {
             return res.status(400).json({ error: 'Entered email is already present' });
         }
         if (email.includes('-')) {
             return res.status(400).json({ error: 'Please remove hypens\'s (-) from the emailId' });
+        }
+        if (isMobileExisted) {
+            return res.status(400).json({ error: 'Entered mobile number is already present' });
+
         }
 
         if (name.length < 3) {

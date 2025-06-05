@@ -11,6 +11,7 @@ export interface inputProps {
   datatestid: string;
   error?: boolean;
   helperText?: string
+  readOnly?:boolean
   //errorMessage: string | undefined
 }
 
@@ -34,6 +35,7 @@ export interface buttonProps {
   btnType: 'submit' | 'button'
   children: React.ReactNode
   handleBtnClick?: () => void
+  disable?:boolean
 }
 
 export interface AmbulanceData {
@@ -86,4 +88,11 @@ export interface TableProps {
     id: string
   }[]
   updateCaseDetails: (val: string) => void
+}
+
+export interface LoaderProps{
+  size:number
+  thickness:number
+  fullScreen:boolean
+  msg:string
 }

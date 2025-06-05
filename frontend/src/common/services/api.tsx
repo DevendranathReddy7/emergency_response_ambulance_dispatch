@@ -68,6 +68,19 @@ export const logEmergencyCase = async (payload: any) => {
     }
 };
 
+export const updateEmergencyCase = async (payload: any) => {
+    try {
+        const response = await axios.put('http://localhost:7000/api/update-emergency', payload);
+        return response.data;
+    } catch (error: any) {
+        if (error.response && error.response.data && error.response.data.error) {
+            throw new Error(error.response.data.error);
+        } else {
+            throw new Error(error.message || 'Failed to update emergency case')
+        }
+    }
+};
+
 export const getEmergencyCase = async (currentPage:number) => {
     try {
         const response = await axios.get(`http://localhost:7000/api/get-emergency/?page=${currentPage}&limit=4`);

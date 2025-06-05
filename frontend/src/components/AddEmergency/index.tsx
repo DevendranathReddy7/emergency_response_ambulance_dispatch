@@ -5,9 +5,9 @@ import PatientDetails from "./PatientDetails";
 import CaseDetails from "./CaseDetails";
 import type { UIErrors } from "../../dataModals/Common";
 import { useMutation } from "@tanstack/react-query";
-import { logEmergencyCase } from "../../common/services/api";
+import { logEmergencyCase, updateEmergencyCase } from "../../common/services/api";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 const intialState = {
     incidentLocation: "",
@@ -46,7 +46,7 @@ function reducer(state: any, action: any) {
         case "UPDATE_BY_EDIT":
             return { ...state, ...action.payload }
         case "RESET":
-            return {...state}
+            return { ...intialState }
 
         default:
             return state;
@@ -55,6 +55,7 @@ function reducer(state: any, action: any) {
 
 const AddEmergency: React.FC = () => {
     const location = useLocation();
+    const { id: editingDocId } = useParams()
     const [currentView, setCurrentView] = useState<'caseDetails' | 'patientDetails'>('patientDetails')
     const { mode = 'add', formData = {} } = location.state || {}
 
@@ -65,8 +66,11 @@ const AddEmergency: React.FC = () => {
     }, [mode, formData])
 
     useEffect(() => {
-        dispatch({ type: 'RESET'})
-    }, [])
+        if (mode === 'add') {
+            dispatch({ type: 'RESET' })
+        }
+    }, [mode])
+
     const [errors, setErrors] = useState<UIErrors>({
         incident__location: {
             error: false,
@@ -99,18 +103,12 @@ const AddEmergency: React.FC = () => {
 
     const changeHandler = (name: string, value: string) => {
         dispatch({ type: 'UPDATE_FIELD', name, value })
-        // if (name === 'patientMobile') {
-        //     if (!/^[0-9]+$/.test(value)) {
-        //         console.log(/^[0-9]+$/.test(value), name,value,'2--->')
-        //         setErrors(prevErr => ({
-        //             ...prevErr,
-        //             [nameToErrorMap[name] as keyof UIErrors]: {
-        //                 ...prevErr[nameToErrorMap[name] as keyof UIErrors],
-        //                 error: true,
-        //             },
-        //         }));
-        //     }
-        // }
+        // if (name === 'patient__mobile' && !(/^[0-9]+$/.test(value))) {
+        //     setErrors(prevErrors => ({
+        //         ...prevErrors,
+        //         [name]: { message: 'Please enter numbers only', error: true }
+        //     }));
+        // } 
 
         if (value !== '' || value !== undefined) {
             setErrors(prevErr => ({
@@ -124,7 +122,7 @@ const AddEmergency: React.FC = () => {
     }
 
     const validatePatentDetails = () => {
-        if (state.patientGender === undefined || state.patientGender.trim() === "") {
+        if (state.patientGender === undefined || state.patientGender?.trim() === "") {
             setErrors((prev) => ({
                 ...prev,
                 patient__gender: { ...prev.patient__gender, error: true },
@@ -197,11 +195,12 @@ const AddEmergency: React.FC = () => {
         return isValid;
     };
 
-    const { mutate, reset } = useMutation({
+    const { mutate: addMutate, reset:addReset, isPending:addPending } = useMutation({
         mutationFn: (payload) => logEmergencyCase(payload),
         onSuccess: () => {
             toast.success('Inclident is Successfully logged')
-            reset()
+            addReset()
+            dispatch({ type: 'RESET' })
         },
         onError: (err) => {
             console.error('Error logging:', err);
@@ -210,25 +209,45 @@ const AddEmergency: React.FC = () => {
         },
     });
 
+    const { mutate: updateMutate, reset:updateReset , isPending:updatePending} = useMutation({
+        mutationFn: (payload) => updateEmergencyCase(payload),
+        onSuccess: () => {
+            toast.success('Inclident is Successfully updated')
+            updateReset()
+            dispatch({ type: 'RESET' })
+        },
+        onError: (err) => {
+            console.error('Error logging:', err);
+            toast.error('Failed to update the inclident')
+
+        },
+    });
+
     const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const isValid = validateCaseDetails()
         if (isValid) {
-            mutate(state);
+            if (mode === 'add') {
+                addMutate(state);
+            } else {
+                updateMutate({
+                    ...state, editingDocId
+                })
+            }
         }
     };
 
     return (
         <div className="bg-gray-200 p-3 rounded m-3">
             <form onSubmit={submitHandler} >
-                {currentView === 'caseDetails' && <CaseDetails errors={errors} state={state} updateField={changeHandler} flow={mode} prevAmbulance={state.ambulanceId} prevCrew={state.crewMembers} />}
+                {currentView === 'caseDetails' && <CaseDetails errors={errors} state={state} updateField={changeHandler} flow={mode} prevAmbulance={formData.ambulanceId} prevCrew={formData.crewMembers} />}
 
-                {currentView === 'patientDetails' && <PatientDetails errors={errors} state={state} updateField={changeHandler} />}
+                {currentView === 'patientDetails' && <PatientDetails errors={errors} state={state} updateField={changeHandler} flow={mode} isMobileNumber={formData.patientMobile}/>}
 
                 <div className={`flex justify-between mx-6 ${currentView === 'patientDetails' ? 'justify-end' : ''}`}>
                     {currentView === 'caseDetails' && <MuiButton btnType="button" variant="outlined" handleBtnClick={backBtnClickHandler}>Back</MuiButton>}
                     {currentView === 'patientDetails' && <MuiButton btnType='button' variant="contained" handleBtnClick={nextBtnClickHandler}>Next</MuiButton>}
-                    {currentView === 'caseDetails' && <MuiButton btnType='submit' variant="contained" >Log Case</MuiButton>}
+                    {currentView === 'caseDetails' && <MuiButton btnType='submit' variant="contained" disable={addPending || updatePending}>{mode === 'add' ? 'Log Case' : 'Update Case'}</MuiButton>}
                 </div>
 
             </form>

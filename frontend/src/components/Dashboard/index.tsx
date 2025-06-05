@@ -60,8 +60,8 @@ const Dashboard = () => {
             };
         });
     }
-    
-    const newObj = transformEmergencyData(data?.updatedEmeregencies) 
+
+    const newObj = transformEmergencyData(data?.updatedEmeregencies)
 
     const handleEditCase = (id: string) => {
 
@@ -69,10 +69,24 @@ const Dashboard = () => {
             return obj._doc._id == id;
         });
 
-        const { incidentLocation, emergencyType, priority, status } = filteredObj[0]._doc
-        const { vehicleNumber, ambulanceType } = filteredObj[0].ambulanceId
-        const { name, age, mobile, gender, address } = filteredObj[0].patientDetails
-        const { name: crewName, email } = filteredObj[0].crewDetails
+        const { incidentLocation, emergencyType, priority, status } = filteredObj[0]._doc;
+        const { vehicleNumber, ambulanceType } = filteredObj[0].ambulanceId;
+        const { name: crewName, email } = filteredObj[0].crewDetails;
+
+        let patientName = null;
+        let patientAge = null;
+        let patientMobile = null;
+        let patientGender = undefined;
+        let patientAddress = null;
+
+        if (filteredObj[0].patientDetails) {
+            const { name, age, mobile, gender, address } = filteredObj[0].patientDetails;
+            patientName = name;
+            patientAge = age;
+            patientMobile = mobile;
+            patientGender = gender;
+            patientAddress = address;
+        }
 
         navigate(`/update-caseDetails/${id}`, {
             state: {
@@ -83,15 +97,15 @@ const Dashboard = () => {
                     priority,
                     ambulanceId: `${vehicleNumber} -- ${ambulanceType}`,
                     crewMembers: [`${crewName} - ${email}`],
-                    patientName: name,
-                    patientAge: age,
-                    patientMobile: mobile,
-                    patientGender: gender,
-                    patientAddress: address,
+                    patientName,
+                    patientAge,
+                    patientMobile,
+                    patientGender,
+                    patientAddress,
                     caseStatus: status
                 }
             }
-        })
+        });
     }
 
     const searchHandle = (value: string): string => {
@@ -102,10 +116,10 @@ const Dashboard = () => {
     return (
         <div className="bg-white p-3 rounded border-2 m-3">
             <h2 className="text-1xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5 mb-3">Reported Cases</h2>
-            {isLoading && <Loader msg="Please wait while we're Loading"/>}
+            {isLoading && <Loader size={40} thickness={4} fullScreen={false} msg="Please wait while we're Loading" />}
             {/* <SearchFilter onSearch={searchHandle} searchValue={searchValue}/> */}
             {!isLoading && <DynamicTable data={newObj} updateCaseDetails={handleEditCase} />}
-            {newObj?.length >0 && <ShowPagination pagination={paginationDetails} updatePage={handlePageChange} prevNext={handlePrevNextChange} />}
+            {newObj?.length > 0 && <ShowPagination pagination={paginationDetails} updatePage={handlePageChange} prevNext={handlePrevNextChange} />}
         </div>
     )
 }

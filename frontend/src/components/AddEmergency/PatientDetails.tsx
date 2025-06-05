@@ -4,9 +4,7 @@ import React, { type ChangeEvent } from "react";
 import DropDown from "../../common/components/Dropdown";
 import { gender } from "../../common/constants/constants";
 
-const PatientDetails = ({ errors, state, updateField }: any) => {
-
-
+const PatientDetails = ({ errors, state, updateField, flow,isMobileNumber }: any) => {
 
     const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
         const { value, name } = e.target
@@ -47,6 +45,7 @@ const PatientDetails = ({ errors, state, updateField }: any) => {
                         datatestid="patient__mobile"
                         error={errors.patient__mobile?.error}
                         helperText={errors.patient__mobile?.message}
+                        readOnly ={flow === 'edit' && isMobileNumber}
                     />
                 </Grid>
 

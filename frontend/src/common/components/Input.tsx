@@ -1,12 +1,28 @@
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
+import { Box, TextField } from '@mui/material';
 import type { inputProps } from '../../dataModals/Common';
 
-export default function Input({ id, label, name, value, datatestid, error, helperText, changeHandle }: inputProps) {
+export default function Input({ id, label, name, value, datatestid, error, helperText, changeHandle, readOnly }: inputProps) {
   return (
     <Box>
-      {/* <label htmlFor={`dropDown__${name}`}>{label}</label> */}
-      <TextField sx={{ width: '100%' }} id={id} name={name} label={label} value={value} data-testid={datatestid} error={error} helperText={error ? helperText : ''} onChange={changeHandle} />
+      <TextField
+        sx={{
+          width: '100%',
+          '& .MuiInputBase-input.Mui-readOnly': {cursor: 'not-allowed'}}}
+        id={id}
+        name={name}
+        label={label}
+        value={value}
+        data-testid={datatestid}
+        error={error}
+        helperText={error ? helperText : ''}
+        onChange={changeHandle}
+        // This makes the field read-only
+        slotProps={{
+          input: {
+            readOnly: readOnly,
+          },
+        }}
+      />
     </Box>
   );
 }
