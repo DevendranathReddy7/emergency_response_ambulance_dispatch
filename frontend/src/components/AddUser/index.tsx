@@ -1,6 +1,6 @@
 import { Grid } from "@mui/material"
 import Input from "../../common/components/Input"
-import { useEffect, useReducer, useState, type ChangeEvent, type FormEvent } from "react"
+import { useReducer, useState, type ChangeEvent, type FormEvent } from "react"
 import DropDown from "../../common/components/Dropdown"
 import { gender, roles } from "../../common/constants/constants"
 import type { UserState } from "../../dataModals/Common"

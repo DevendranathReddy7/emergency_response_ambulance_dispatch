@@ -23,3 +23,5 @@ export const priorityLevels = ['1 - Highest','2 - High','3 - Medium','4 - Low','
 export const caseStatus = ["Not Assigned", "On the Way", "On Scene", "At Hospital", "Closed"];
 export const gender = ['Male', 'Female']
 export const roles = ['Admin', 'Emergency response staff', 'Triage staff', 'Patient']
+export const ambulanceType = ['Basic', 'ICU', 'Neonatal'];
+

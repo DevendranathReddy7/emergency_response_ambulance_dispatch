@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 //import MuiButton from "../../common/components/MuiButton";
 
 
-const CaseDetails = ({ errors, state, updateField }: any) => {
+const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance,prevCrew }: any) => {
     //const [showExtraCrew, setShowExtraCrew] = useState<boolean>(false)
     const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -52,6 +52,9 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
     }, [isCrewError]);
 
     const renderAmbulances = () => {
+        // if( !ambulanceData &&  flow === 'edit'){
+        //     return [prevAmbulance]
+        // }
         if (isAmbulanceLoading) {
             return ['Please wait while we\'re loading'];
         } else if (isAmbulanceError) {
@@ -64,6 +67,10 @@ const CaseDetails = ({ errors, state, updateField }: any) => {
     };
 
     const renderCrewMembers = () => {
+
+        // if(!crewData && flow === 'edit'){
+        //     return [prevCrew[0]]
+        // }
         if (isCrewLoading) {
             return ['Please wait while we\'re loading'];
         } else if (isCrewError) {

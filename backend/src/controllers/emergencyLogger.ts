@@ -77,7 +77,6 @@ const emergencyLogger = async (req: Request, res: Response, next: NextFunction) 
             ambulanceId: ambulanceMongoId,
             crewMembers: resolvedStaffMongoIds
         });
-        console.log(newCase, '---------------<>=======')
         await newCase.save();
         res.status(201).json({ message: 'Case Logged Successfully', data: newCase.crewMembers });
 

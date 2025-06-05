@@ -6,8 +6,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         lowercase: true,
         match: [/.+@.+\..+/, 'Please fill a valid email address'],
-        unique: true,
-        index: true,
     },
     role: {
         type: String,
@@ -29,7 +27,6 @@ const userSchema = new mongoose.Schema({
         min: 1,
         max: 5,
         default: 5,
-        required: false
     },
     shiftType: {
         type: String,
@@ -59,5 +56,7 @@ const userSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
+userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $exists: true, $ne: null } } });
 
 export default mongoose.model("User", userSchema);

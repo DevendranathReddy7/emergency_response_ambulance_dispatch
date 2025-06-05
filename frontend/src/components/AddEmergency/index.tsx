@@ -1,4 +1,4 @@
-import { useReducer, useState, type FormEvent } from "react";
+import { useEffect, useReducer, useState, type FormEvent } from "react";
 
 import MuiButton from "../../common/components/MuiButton";
 import PatientDetails from "./PatientDetails";
@@ -7,6 +7,7 @@ import type { UIErrors } from "../../dataModals/Common";
 import { useMutation } from "@tanstack/react-query";
 import { logEmergencyCase } from "../../common/services/api";
 import { toast } from "react-toastify";
+import { useLocation } from "react-router-dom";
 
 const intialState = {
     incidentLocation: "",
@@ -42,14 +43,30 @@ function reducer(state: any, action: any) {
             } else {
                 return { ...state, [action.name]: action.value };
             }
+        case "UPDATE_BY_EDIT":
+            return { ...state, ...action.payload }
+        case "RESET":
+            return {...state}
+
         default:
             return state;
     }
 }
 
 const AddEmergency: React.FC = () => {
+    const location = useLocation();
     const [currentView, setCurrentView] = useState<'caseDetails' | 'patientDetails'>('patientDetails')
+    const { mode = 'add', formData = {} } = location.state || {}
 
+    useEffect(() => {
+        if (mode === 'edit' && formData) {
+            dispatch({ type: 'UPDATE_BY_EDIT', payload: formData })
+        }
+    }, [mode, formData])
+
+    useEffect(() => {
+        dispatch({ type: 'RESET'})
+    }, [])
     const [errors, setErrors] = useState<UIErrors>({
         incident__location: {
             error: false,
@@ -182,8 +199,9 @@ const AddEmergency: React.FC = () => {
 
     const { mutate, reset } = useMutation({
         mutationFn: (payload) => logEmergencyCase(payload),
-        onSuccess: (data) => {
+        onSuccess: () => {
             toast.success('Inclident is Successfully logged')
+            reset()
         },
         onError: (err) => {
             console.error('Error logging:', err);
@@ -203,7 +221,7 @@ const AddEmergency: React.FC = () => {
     return (
         <div className="bg-gray-200 p-3 rounded m-3">
             <form onSubmit={submitHandler} >
-                {currentView === 'caseDetails' && <CaseDetails errors={errors} state={state} updateField={changeHandler} />}
+                {currentView === 'caseDetails' && <CaseDetails errors={errors} state={state} updateField={changeHandler} flow={mode} prevAmbulance={state.ambulanceId} prevCrew={state.crewMembers} />}
 
                 {currentView === 'patientDetails' && <PatientDetails errors={errors} state={state} updateField={changeHandler} />}
 

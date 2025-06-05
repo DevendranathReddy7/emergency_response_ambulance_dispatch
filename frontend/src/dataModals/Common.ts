@@ -20,7 +20,7 @@ export interface dropDownProps {
   fieldName: string;
   error?: boolean,
   helperText?: string
-  value:string
+  value: string
   selectHandle: (event: ChangeEvent<HTMLSelectElement>) => void;
   //(event: SelectChangeEvent)
 }
@@ -54,4 +54,36 @@ export interface UserState {
   address: string;
   role: string;
   age: string;
+}
+
+export interface ModalProps {
+  isOpen: boolean
+  handleModal: (status: boolean) => void
+}
+
+export interface PaginationProps {
+  pagination: {
+    totalResults: number,
+    totalPages: number,
+    pageSize: number,
+    currentPage: number
+  }
+  updatePage: (val: number) => void
+  prevNext: (val: number) => void
+
+}
+
+export interface TableProps {
+  data: {
+    'Patient name': string | undefined,
+    'Emergency type': string,
+    'Incident location': string | undefined,
+    Status: string,
+    Priority: string,
+    'Ambulance assigned': string,
+    Date: string,
+    Actions: string[],
+    id: string
+  }[]
+  updateCaseDetails: (val: string) => void
 }

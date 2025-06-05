@@ -5,7 +5,6 @@ const ambulances = new mongoose.Schema({
     vehicleNumber: {
         type: String,
         required: [true, 'Vehicle number is required'],
-        unique: true,
         trim: true
     },
     ambulanceType: {

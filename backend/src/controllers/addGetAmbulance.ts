@@ -2,18 +2,24 @@ import { NextFunction, Request, Response } from "express";
 import ambulance from "../models/ambulance";
 
 export const addAmbulance = async (req: Request, res: Response, next: NextFunction) => {
+    const { vehicleNumber } = req.body;
+
     try {
-        const newAmbulance = await new ambulance({
-            ...req.body
-        })
+        const isVehicleNumberExisted = await ambulance.findOne({ vehicleNumber });
+        if (isVehicleNumberExisted) {
+            return res.status(400).json({ message: 'Failed to add a new ambulance:', error: 'Provided vehicle number is already registered.' });
+        } else {
+            const newAmbulance = new ambulance({
+                ...req.body
+            });
 
-        await newAmbulance.save()
-        res.status(201).json({ message: 'Ambulance added sucessfullly' })
+            await newAmbulance.save();
+            return res.status(201).json({ message: 'Ambulance added successfully' });
+        }
     } catch (e: any) {
-        res.status(500).json({ message: 'Failed to add a new ambulance due to a server error.', error: e.message });
-
+        return res.status(500).json({ message: 'Failed to add a new ambulance due to a server error.', error: e.message });
     }
-}
+};
 
 export const getAmbulance = async (req: Request, res: Response, next: NextFunction) => {
     try {

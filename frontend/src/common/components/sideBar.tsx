@@ -1,9 +1,28 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { NavLink } from "react-router-dom"
+
+
+const NavLinks = [
+    {
+        linkTo: '/add-ambulance',
+        LinkName: 'Add Ambulance',
+        id: 'add_ambulance'
+    },
+    {
+        linkTo: '/add-user',
+        LinkName: 'Add User',
+        id: 'add_user'
+    },
+    {
+        linkTo: '/log-emergency',
+        LinkName: 'Log Case',
+        id: 'add_case'
+    }
+];
 
 const SideBar = () => {
     const [showModal, setShowModal] = useState<boolean>(false)
-    
+
     const getModal = () => {
         return (
             <div
@@ -42,26 +61,78 @@ const SideBar = () => {
         setShowModal(status)
     }
 
-    
 
-    const renderLinks = () => {
+
+    // const renderLinks = () => {
+    //     return (
+    //         <>
+    //             <div className="border-white p-2 rounded">
+    //                 <NavLink
+    //                     to="/log-emergency"
+    //                     onClick={() => handleModal(false)}
+    //                     className={({ isActive }) =>
+    //                         isActive
+    //                             ? 'bg-blue-800 text-white p-2 rounded'
+    //                             : 'hover:bg-blue-400 hover:text-white  p-2 rounded'
+    //                     }
+    //                 >
+    //                     Log Case
+    //                 </NavLink>
+    //             </div>
+
+    //             <div className="border-white p-2 rounded">
+    //                 <NavLink
+    //                     to="/add-user"
+    //                     onClick={() => handleModal(false)}
+    //                     className={({ isActive }) =>
+    //                         isActive
+    //                             ? 'bg-blue-800 text-white p-2 rounded'
+    //                             : 'hover:bg-blue-400 hover:text-white  p-2 rounded'
+    //                     }
+    //                 >
+    //                     Add User
+    //                 </NavLink>
+    //             </div>
+    //         </ >
+    //     )
+    // }
+
+    const renderLinks = () => { 
         return (
             <>
-                <div className="hover:bg-blue-800 border-white hover:text-white p-2 rounded">
-                    <Link to='/log-emergency' onClick={() => handleModal(false)}>Log Case</Link>
-                </div>
-
-                <div className="hover:bg-blue-800 border-white hover:text-white p-2 rounded">
-                    <Link to='/add-user' onClick={() => handleModal(false)}>Add Staff</Link>
-                </div>
-            </ >
-        )
-    }
+                {NavLinks.map((currentNav) => (
+                    <div className="border-white p-2 rounded" key={currentNav.id}>
+                        <NavLink
+                            to={currentNav.linkTo}
+                            onClick={() => handleModal(false)}
+                            className={({ isActive }) =>
+                                isActive
+                                    ? 'bg-blue-800 text-white p-2 rounded'
+                                    : 'hover:bg-blue-400 hover:text-white p-2 rounded'
+                            }
+                        >
+                            {currentNav.LinkName}
+                        </NavLink>
+                    </div>
+                ))}
+            </>
+        );
+    };
 
     return (
         <div className="bg-gray-200 flex justify-between p-3 rounded items-center m-3 ">
-            <div>
-                <h1>Emergency Response</h1>
+            <div className="border-white p-2 rounded">
+                <NavLink
+                    to="/"
+                    onClick={() => handleModal(false)}
+                    className={({ isActive }) =>
+                        isActive
+                            ? 'bg-blue-800 text-white p-2 rounded'
+                            : 'hover:bg-blue-400 hover:text-white  p-2 rounded'
+                    }
+                >
+                    ER System
+                </NavLink>
             </div>
 
             <div>
@@ -70,7 +141,7 @@ const SideBar = () => {
 
             <div className=" gap-4 hidden sm:flex sm: justify-between">{renderLinks()}</div>
 
-           {showModal && getModal()}
+            {showModal && getModal()}
         </div>
     )
 }
