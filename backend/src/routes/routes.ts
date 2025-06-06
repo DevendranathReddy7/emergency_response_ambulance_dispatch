@@ -1,19 +1,20 @@
-import {addAmbulance, getAmbulance} from "../controllers/addGetAmbulance"
-import {addStaff, getCrewMembers} from "../controllers/addGetStaff"
-import {emergencyLogger, updateEmergency} from "../controllers/emergencyLogger"
+import { addAmbulance, getAmbulance } from "../controllers/addGetAmbulance"
+import { addStaff, getCrewMembers, deleteStaff } from "../controllers/Staff"
+import { emergencyLogger, updateEmergency } from "../controllers/emergencyLogger"
 import getEmergencies from "../controllers/getEmergencies"
 
-const express  = require('express')
+const express = require('express')
 const router = express.Router()
 
-router.post('/log-emergency',emergencyLogger)
+router.post('/log-emergency', emergencyLogger)
 router.put('/update-emergency', updateEmergency)
-router.get('/get-emergency',getEmergencies)
+router.get('/get-emergency', getEmergencies)
 
-router.post('/add-ambulance',addAmbulance)
-router.get('/get-ambulance',getAmbulance)
+router.post('/add-ambulance', addAmbulance)
+router.get('/get-ambulance', getAmbulance)
 
 router.post('/add-staff', addStaff)
-router.get('/get-staff',getCrewMembers)
+router.get('/get-staff', getCrewMembers)
+router.delete('/delete-staff', deleteStaff)
 
 export default router

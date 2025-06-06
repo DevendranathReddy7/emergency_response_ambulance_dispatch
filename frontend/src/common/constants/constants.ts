@@ -18,7 +18,7 @@
 //     { value: "at_hospital", label: "At Hospital" },
 //     { value: "closed", label: "Closed" },
 // ];
-export const incidentTypes = ['Accident', 'Cardiac', 'trauma'];
+export const incidentTypes = ['Accident', 'Cardiac', 'Trauma'];
 export const priorityLevels = ['1 - Highest','2 - High','3 - Medium','4 - Low','5 - Least']
 export const caseStatus = ["Assigned", "On the Way", "On Scene", "At Hospital", "Closed"];
 export const gender = ['Male', 'Female']

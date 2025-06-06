@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAvailableAmbulances, getAvailableCrewStaff } from "../../common/services/api";
 import type { AmbulanceData } from "../../dataModals/Common";
 import { toast } from "react-toastify";
+import ShowErrorBanner from "../../common/components/ShowErrorBanner";
 //import MuiButton from "../../common/components/MuiButton";
 
 
@@ -34,7 +35,7 @@ const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance, prevCrew
 
     const { data: crewData, isLoading: isCrewLoading, isError: isCrewError } = useQuery({
         queryKey: ['get-crew'],
-        queryFn: getAvailableCrewStaff,
+        queryFn: () => getAvailableCrewStaff('erStaff', 'active'),
         staleTime: 1 * 60 * 1000,
 
     });
@@ -52,13 +53,13 @@ const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance, prevCrew
     }, [isCrewError]);
 
     const renderAmbulances = () => {
-        if(  flow === 'edit'){
+        if (flow === 'edit') {
             return [prevAmbulance]
         }
         if (isAmbulanceLoading) {
             return ['Please wait while we\'re loading'];
-        } else if (isAmbulanceError) {
-            return ['Failed to fetch available ambulances'];
+        } else if (isAmbulanceError || ambulanceData?.data?.data?.length === 0) {
+            return ['Failed to fetch available ambulances']
         } else {
             return ambulanceData?.data?.data?.map((ambulance: AmbulanceData) => {
                 return `${ambulance.vehicleNumber} -- ${ambulance.ambulanceType}`;
@@ -68,7 +69,7 @@ const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance, prevCrew
 
     const renderCrewMembers = () => {
 
-        if( flow === 'edit'){
+        if (flow === 'edit') {
             return [prevCrew[0]]
         }
         if (isCrewLoading) {
@@ -77,7 +78,8 @@ const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance, prevCrew
             return ['Failed to fetch available crew members'];
         } else {
             return crewData?.data?.data?.map((crew: any) => {
-                return `${crew.name} - ${crew.email}`;
+                let updatedFatigue = `${parseInt(crew.fatigueLevel) * 20}%`
+                return `${crew.name} - ${crew.email} - FL : ${updatedFatigue}`;
             }) || [];
         }
     };
@@ -102,6 +104,8 @@ const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance, prevCrew
     return (
         <React.Fragment>
             <h2 className="text-2xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5">Case Details</h2>
+            {(isAmbulanceError || ambulanceData?.data?.data?.length === 0) && <ShowErrorBanner msg="We currently don't have any ambulances available Please try other transportation options to get the patient to the hospital" />}
+            {(isCrewError || crewData?.data?.data?.length === 0) && <ShowErrorBanner msg="We currently don't have any staff available to assign.." />}
             <Grid container spacing={3} margin={3}>
                 <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
                     <DropDown

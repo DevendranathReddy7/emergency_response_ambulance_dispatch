@@ -30,5 +30,4 @@ export const getAmbulance = async (req: Request, res: Response, next: NextFuncti
         return res.status(400).json({ error: 'Something went wrong while getting available Ambulance details' });
 
     }
-
 }

@@ -1,10 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AddEmergency from "./components/AddEmergency";
-import AddUser from "./components/AddUser";
+import AddUser from "./components/User";
 import Dashboard from './components/Dashboard'
 import SideBar from "./common/components/sideBar";
 import { ToastContainer } from "react-toastify";
 import AddAmbulance from "./components/AddAmbulances";
+import UsersList from "./components/User/UserList";
 
 function HiddenTailwindClasses() {
   return (
@@ -31,6 +32,8 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/log-emergency" element={<AddEmergency />} />
         <Route path="/add-user" element={<AddUser />} />
+        <Route path="/edit-user/:id" element={<AddUser />} />
+        <Route path="/view-user" element={<UsersList />} />
         <Route path="/update-caseDetails/:id" element={<AddEmergency />} />
         <Route path="/add-ambulance" element={<AddAmbulance />} />
       </Routes>

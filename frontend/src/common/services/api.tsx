@@ -40,15 +40,29 @@ export const addStaff = async (payload: any) => {
     }
 };
 
-export const getAvailableCrewStaff = async () => {
+export const getAvailableCrewStaff = async (role = 'erStaff', status = 'active') => {
     try {
-        return await axios.get('http://localhost:7000/api/get-staff')
+        return await axios.get(`http://localhost:7000/api/get-staff/?role=${role}&status=${status}`)
 
     } catch (error: any) {
         if (error.response && error.response.data && error.response.data.error) {
             throw new Error(error.response.data.error);
         } else {
             throw new Error(error.message || 'Failed to fetch avaialble crew members')
+        }
+    }
+
+}
+
+export const deleteTheUser = async (userId:string) => {
+    try {
+        return await axios.delete(`http://localhost:7000/api/delete-staff/?userId=${userId}`)
+
+    } catch (error: any) {
+        if (error.response && error.response.data && error.response.data.error) {
+            throw new Error(error.response.data.error);
+        } else {
+            throw new Error(error.message || 'Failed to delete the user')
         }
     }
 
@@ -81,7 +95,7 @@ export const updateEmergencyCase = async (payload: any) => {
     }
 };
 
-export const getEmergencyCase = async (currentPage:number) => {
+export const getEmergencyCase = async (currentPage: number) => {
     try {
         const response = await axios.get(`http://localhost:7000/api/get-emergency/?page=${currentPage}&limit=4`);
         return response.data;

@@ -4,17 +4,16 @@ import ModalClose from '@mui/joy/ModalClose';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import type { ModalProps } from '../../dataModals/Common';
+import MuiButton from './MuiButton';
 
-export default function BasicModal({isOpen, handleModal, data}:ModalProps) {
-  console.log(data)
+export default function BasicModal({ isOpen, handleModal, confirmContent, handleConfirmation }: ModalProps) {
   return (
     <React.Fragment>
-      
       <Modal
         aria-labelledby="modal-title"
         aria-describedby="modal-desc"
         open={isOpen}
-        onClose={()=>handleModal(false)}
+        onClose={() => handleModal(false)}
         sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
         <Sheet
@@ -29,12 +28,18 @@ export default function BasicModal({isOpen, handleModal, data}:ModalProps) {
             textColor="inherit"
             sx={{ fontWeight: 'lg', mb: 1 }}
           >
-            This is the modal title
+            {confirmContent.title}
+            <hr />
           </Typography>
           <Typography id="modal-desc" textColor="text.tertiary">
-            Make sure to use <code>aria-labelledby</code> on the modal dialog with an
-            optional <code>aria-describedby</code> attribute.
+            {confirmContent.content}
+            <hr />
           </Typography>
+          <div className='flex justify-between mt-3'>
+            {confirmContent.buttons.map((btn) => (
+              <MuiButton variant={btn === 'Cancel' ? 'outlined' : 'danger'} btnType='button' handleBtnClick={btn === 'Cancel' ? handleModal : handleConfirmation} >{btn}</MuiButton>
+            ))}
+          </div>
         </Sheet>
       </Modal>
     </React.Fragment>

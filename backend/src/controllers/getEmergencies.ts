@@ -16,7 +16,7 @@ const getEmergencies = async (req: Request, res: Response, next: NextFunction) =
 
     try {
         const totalCases = await emergencyCase.countDocuments();
-        const currentEmergencies = await emergencyCase.find().skip(skip).limit(reqLimit);
+        const currentEmergencies = await emergencyCase.find().skip(skip).limit(reqLimit).sort({ createdAt: -1 }).exec()
 
         async function processEmergencies(currentEmergencies: any) {
             const updatedEmergencies = await Promise.all(

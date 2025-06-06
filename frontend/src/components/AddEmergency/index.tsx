@@ -195,21 +195,23 @@ const AddEmergency: React.FC = () => {
         return isValid;
     };
 
-    const { mutate: addMutate, reset:addReset, isPending:addPending } = useMutation({
+    const { mutate: addMutate, reset: addReset, isPending: addPending } = useMutation({
         mutationFn: (payload) => logEmergencyCase(payload),
         onSuccess: () => {
             toast.success('Inclident is Successfully logged')
             addReset()
             dispatch({ type: 'RESET' })
         },
-        onError: (err) => {
-            console.error('Error logging:', err);
-            toast.error('Failed to log the inclident')
+        onError: (err: any) => {
+            if (err.message.startsWith('Validation failed: fatigueLevel')) {
+                toast.error(`Incident couldn't be logged. The assigned crew member has a LOW fatigue level. Please assign a crew member with a higher fatigue level if available.`);
+            } else {
+                toast.error('Failed to log emergency case. Please try again.')
+            }
+        }
+    })
 
-        },
-    });
-
-    const { mutate: updateMutate, reset:updateReset , isPending:updatePending} = useMutation({
+    const { mutate: updateMutate, reset: updateReset, isPending: updatePending } = useMutation({
         mutationFn: (payload) => updateEmergencyCase(payload),
         onSuccess: () => {
             toast.success('Inclident is Successfully updated')
@@ -238,11 +240,11 @@ const AddEmergency: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-200 p-3 rounded m-3">
+        <div className="rounded-lg p-6 shadow-md m-3 bg-white ">
             <form onSubmit={submitHandler} >
                 {currentView === 'caseDetails' && <CaseDetails errors={errors} state={state} updateField={changeHandler} flow={mode} prevAmbulance={formData.ambulanceId} prevCrew={formData.crewMembers} />}
 
-                {currentView === 'patientDetails' && <PatientDetails errors={errors} state={state} updateField={changeHandler} flow={mode} isMobileNumber={formData.patientMobile}/>}
+                {currentView === 'patientDetails' && <PatientDetails errors={errors} state={state} updateField={changeHandler} flow={mode} isMobileNumber={formData.patientMobile} />}
 
                 <div className={`flex justify-between mx-6 ${currentView === 'patientDetails' ? 'justify-end' : ''}`}>
                     {currentView === 'caseDetails' && <MuiButton btnType="button" variant="outlined" handleBtnClick={backBtnClickHandler}>Back</MuiButton>}

@@ -173,8 +173,8 @@ const AddUser = () => {
         }
     }
     return (
-        <div className="bg-gray-200 p-3 rounded m-3">
-            {isPending && <Loader />}
+        <div className="rounded-lg p-6 shadow-md m-3 bg-white">
+            {isPending && <Loader size={40} thickness={4} fullScreen={false} msg="Please wait while we\'re Loading"/>}
             <h2 className="text-2xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5">Add an User</h2>
             <form onSubmit={submitHandler}>
                 <Grid container spacing={3} margin={3}>

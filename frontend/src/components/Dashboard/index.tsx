@@ -71,7 +71,7 @@ const Dashboard = () => {
 
         const { incidentLocation, emergencyType, priority, status } = filteredObj[0]._doc;
         const { vehicleNumber, ambulanceType } = filteredObj[0].ambulanceId;
-        const { name: crewName, email } = filteredObj[0].crewDetails;
+        const { name:crewName, email, fatigueLevel } = filteredObj[0]?.crewDetails;
 
         let patientName = null;
         let patientAge = null;
@@ -96,7 +96,7 @@ const Dashboard = () => {
                     emergencyType,
                     priority,
                     ambulanceId: `${vehicleNumber} -- ${ambulanceType}`,
-                    crewMembers: [`${crewName} - ${email}`],
+                    crewMembers: [`${crewName} - ${email} - FL: ${parseInt(fatigueLevel)*20}%`],
                     patientName,
                     patientAge,
                     patientMobile,
@@ -115,11 +115,11 @@ const Dashboard = () => {
 
 
     return (
-        <div className="bg-white p-3 rounded border-2 m-3">
+        <div className="rounded-lg p-6 shadow-md m-3 bg-white">
             <h2 className="text-1xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5 mb-3">Reported Cases</h2>
             {isLoading && <Loader size={40} thickness={4} fullScreen={false} msg="Please wait while we're Loading" />}
             {/* <SearchFilter onSearch={searchHandle} searchValue={searchValue}/> */}
-            {!isLoading && <DynamicTable data={newObj} updateCaseDetails={handleEditCase} />}
+            {!isLoading && <DynamicTable data={newObj} updateDetails={handleEditCase} />}
             {newObj?.length > 0 && <ShowPagination pagination={paginationDetails} updatePage={handlePageChange} prevNext={handlePrevNextChange} />}
         </div>
     )

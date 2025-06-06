@@ -3,6 +3,7 @@ import emergencyCase from "../models/emergencyCase";
 import user from "../models/user";
 import { priorityLevel } from "../common/constants";
 import ambulance from "../models/ambulance";
+import mongoose from "mongoose";
 
 
 const addPatientDetailsToUser = async (patientName: string, patientAge: string, patientMobile: string, patientGender: string, patientAddress: string) => {
@@ -110,6 +111,12 @@ export const emergencyLogger = async (req: Request, res: Response, next: NextFun
             //     return res.status(500).json({ message: 'Failed to add or verify patient details.' });
             // }
         }
+         const patientDoc = await user.findOne({ mobile: patientMobile, role: 'Patient' }).select('_id');
+        // if (!patientDoc) {
+        //     // This might happen if addPatientDetailsToUser failed silently or mobile didn't match.
+        //     return res.status(404).json({ message: 'Patient record not found to link with case.' });
+        // }
+
 
         const resolvedStaffMongoIds = (await Promise.all(resloveCrewIds(crewMembers))).filter(id => id !== null);
 
@@ -117,11 +124,26 @@ export const emergencyLogger = async (req: Request, res: Response, next: NextFun
         if (!ambulanceMongoDoc) {
             return res.status(404).json({ message: 'Assigned ambulance not found.' });
         }
-        const patientDoc = await user.findOne({ mobile: patientMobile, role: 'Patient' }).select('_id');
-        // if (!patientDoc) {
-        //     // This might happen if addPatientDetailsToUser failed silently or mobile didn't match.
-        //     return res.status(404).json({ message: 'Patient record not found to link with case.' });
-        // }
+
+
+        const crewMembersToUpdate: { id: mongoose.Types.ObjectId; newFatigueLevel: number; }[] = [];
+        
+        for (const crewId of resolvedStaffMongoIds) {
+            const crewMemberDoc = await user.findById(crewId);
+            if (!crewMemberDoc) {
+                return res.status(404).json({ message: `Crew member with ID ${crewId} not found during fatigue check.` });
+            }
+
+            const newFatigueLevel = Math.max(0, crewMemberDoc.fatigueLevel - 1);
+
+            if (newFatigueLevel < 1) { 
+                return res.status(400).json({
+                    message: `Incident couldn't be logged. Crew member "${crewMemberDoc.name}" has a fatigue level of 1. Reducing it further is not allowed.`,
+                    error: `Validation failed: fatigueLevel: Path \`fatigueLevel\` (${newFatigueLevel}) is less than minimum allowed value (1).`
+                });
+            }
+            crewMembersToUpdate.push({ id: crewId, newFatigueLevel: newFatigueLevel });
+        }
 
         const newCase = new emergencyCase({
             emergencyType,
@@ -135,6 +157,24 @@ export const emergencyLogger = async (req: Request, res: Response, next: NextFun
         const savedCase = await newCase.save();
 
         if (savedCase) {
+
+            for (const crewId of resolvedStaffMongoIds) {
+            const crewMemberDoc = await user.findById(crewId);
+            if (crewMemberDoc) {
+                const newFatigueLevel = Math.max(0, crewMemberDoc.fatigueLevel - 1);
+                const updatedCrewMember = await user.findByIdAndUpdate(
+                    crewId,
+                    { fatigueLevel: newFatigueLevel },
+                    { new: true, runValidators: true }
+                );
+                if (updatedCrewMember) {
+                    console.log(`Fatigue Level updated for crew member ${crewId}:`, updatedCrewMember.fatigueLevel);
+                } else {
+                    console.warn(`Failed to update fatigue level for crew member ${crewId}`);
+                }
+            }
+        }
+
             const updateAmbulanceStatus = await ambulance.findByIdAndUpdate(
                 ambulanceMongoDoc._id,
                 { status: 'Not Available' },
@@ -145,23 +185,6 @@ export const emergencyLogger = async (req: Request, res: Response, next: NextFun
                 console.log('Ambulance status updated successfully:', updateAmbulanceStatus);
             } else {
                 console.warn('Ambulance not found or not updated for ID:', ambulanceMongoDoc._id);
-            }
-
-            for (const crewId of resolvedStaffMongoIds) {
-                const crewMemberDoc = await user.findById(crewId);
-                if (crewMemberDoc) {
-                    const newFatigueLevel = Math.max(0, crewMemberDoc.fatigueLevel - 1);
-                    const updatedCrewMember = await user.findByIdAndUpdate(
-                        crewId,
-                        { fatigueLevel: newFatigueLevel },
-                        { new: true, runValidators: true }
-                    );
-                    if (updatedCrewMember) {
-                        console.log(`Fatigue Level updated for crew member ${crewId}:`, updatedCrewMember.fatigueLevel);
-                    } else {
-                        console.warn(`Failed to update fatigue level for crew member ${crewId}`);
-                    }
-                }
             }
         }
 
@@ -227,23 +250,32 @@ export const updateEmergency = async (req: Request, res: Response, next: NextFun
             return res.status(500).json({ message: 'Failed to update emergency case.' });
         }
 
-        //Start --Below code is when we need have an option to change ambulance in Edit
-        if (existingCase.ambulanceId && !existingCase.ambulanceId.equals(newAmbulanceMongoId)) {
+        if (updatedCase && ['At Hospital', 'Closed'.includes(caseStatus)]) {
             await ambulance.findByIdAndUpdate(
                 existingCase.ambulanceId,
                 { status: 'Available' },
                 { new: false }
             );
-            console.log(`Old ambulance (ID: ${existingCase.ambulanceId}) status reverted to 'Available'.`);
         }
 
 
-        await ambulance.findByIdAndUpdate(
-            newAmbulanceMongoId,
-            { status: 'Not Available' },
-            { new: true }
-        );
-        console.log(`New ambulance (ID: ${newAmbulanceMongoId}) status set to 'Not Available'.`);
+        //Start --Below code is when we need have an option to change ambulance in Edit
+        // if (existingCase.ambulanceId && !existingCase.ambulanceId.equals(newAmbulanceMongoId)) {
+        //     await ambulance.findByIdAndUpdate(
+        //         existingCase.ambulanceId,
+        //         { status: 'Available' },
+        //         { new: false }
+        //     );
+        //     console.log(`Old ambulance (ID: ${existingCase.ambulanceId}) status reverted to 'Available'.`);
+        // }
+
+
+        // await ambulance.findByIdAndUpdate(
+        //     newAmbulanceMongoId,
+        //     { status: 'Not Available' },
+        //     { new: true }
+        // );
+        // console.log(`New ambulance (ID: ${newAmbulanceMongoId}) status set to 'Not Available'.`);
         // End
 
         const oldCrewMemberIds = existingCase.crewMembers.map((id: any) => id.toString());
@@ -255,7 +287,7 @@ export const updateEmergency = async (req: Request, res: Response, next: NextFun
         for (const crewId of newlyAssignedCrewIds) {
             const crewMemberDoc = await user.findById(crewId);
             if (crewMemberDoc) {
-                const newFatigueLevel = Math.max(0, crewMemberDoc.fatigueLevel - 1); 
+                const newFatigueLevel = Math.max(0, crewMemberDoc.fatigueLevel - 1);
                 await user.findByIdAndUpdate(
                     crewId,
                     { fatigueLevel: newFatigueLevel },

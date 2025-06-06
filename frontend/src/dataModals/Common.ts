@@ -11,7 +11,7 @@ export interface inputProps {
   datatestid: string;
   error?: boolean;
   helperText?: string
-  readOnly?:boolean
+  readOnly?: boolean
   //errorMessage: string | undefined
 }
 
@@ -31,11 +31,11 @@ export interface UIErrors {
 }
 
 export interface buttonProps {
-  variant: 'contained' | 'outlined' | 'text'
+  variant: 'contained' | 'outlined' | 'text' | 'danger'
   btnType: 'submit' | 'button'
   children: React.ReactNode
-  handleBtnClick?: () => void
-  disable?:boolean
+  handleBtnClick?: (val:any) => void
+  disable?: boolean
 }
 
 export interface AmbulanceData {
@@ -61,7 +61,12 @@ export interface UserState {
 export interface ModalProps {
   isOpen: boolean
   handleModal: (status: boolean) => void
-  data:any
+  confirmContent: {
+    title: string,
+    content: string,
+    buttons: string[]
+  }
+  handleConfirmation: () => void
 }
 
 export interface PaginationProps {
@@ -88,12 +93,13 @@ export interface TableProps {
     Actions: string[],
     id: string
   }[]
-  updateCaseDetails: (val: string) => void
+  updateDetails?: (val: string) => void
+  deleteDetails?: (val: string) => void
 }
 
-export interface LoaderProps{
-  size:number
-  thickness:number
-  fullScreen:boolean
-  msg:string
+export interface LoaderProps {
+  size: number
+  thickness: number
+  fullScreen: boolean
+  msg: string
 }
