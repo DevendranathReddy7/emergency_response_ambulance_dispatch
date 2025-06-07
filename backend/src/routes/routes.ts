@@ -1,5 +1,5 @@
 import { addAmbulance, getAmbulance } from "../controllers/addGetAmbulance"
-import { addStaff, getCrewMembers, deleteStaff } from "../controllers/Staff"
+import { addStaff, getCrewMembers, deleteStaff, editStaff } from "../controllers/Staff"
 import { emergencyLogger, updateEmergency } from "../controllers/emergencyLogger"
 import getEmergencies from "../controllers/getEmergencies"
 
@@ -15,6 +15,7 @@ router.get('/get-ambulance', getAmbulance)
 
 router.post('/add-staff', addStaff)
 router.get('/get-staff', getCrewMembers)
+router.put('/update-staff', editStaff)
 router.delete('/delete-staff', deleteStaff)
 
 export default router

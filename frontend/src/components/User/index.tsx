@@ -1,14 +1,16 @@
 import { Grid } from "@mui/material"
 import Input from "../../common/components/Input"
-import { useReducer, useState, type ChangeEvent, type FormEvent } from "react"
+import { useEffect, useReducer, useState, type ChangeEvent, type FormEvent } from "react"
 import DropDown from "../../common/components/Dropdown"
 import { gender, roles } from "../../common/constants/constants"
 import type { UserState } from "../../dataModals/Common"
 import MuiButton from "../../common/components/MuiButton"
 import { useMutation } from "@tanstack/react-query"
-import { addStaff } from "../../common/services/api"
+import { addStaff, editStaff } from "../../common/services/api"
 import Loader from "../../common/components/Loader"
 import { toast } from 'react-toastify';
+import { useLocation, useParams } from "react-router-dom"
+import ShowErrorBanner from "../../common/components/ShowErrorBanner"
 
 // type UserAction =
 //     | { type: "UPDATE_FIELD"; name: keyof UserState; value: any };
@@ -27,6 +29,8 @@ const reducer = (state: any, action: any) => {
     switch (action.type) {
         case "UPDATE_FIELD":
             return { ...state, [action.name]: action.value };
+        case 'UPDATE_BY_EDIT':
+            return { ...state, ...action.payload };
         case "RESET":
             return { ...initialState }
         default:
@@ -37,6 +41,11 @@ const reducer = (state: any, action: any) => {
 const AddUser = () => {
 
     const [state, dispatch] = useReducer(reducer, initialState)
+    const [noChangeError, setNoChangeError] = useState<boolean>(false)
+    const location = useLocation()
+    const { id: editingUserId } = useParams()
+    const { mode = 'add', formData = {} } = location.state || {}
+
     const [errors, setErrors] = useState({
         name: {
             error: false,
@@ -68,7 +77,14 @@ const AddUser = () => {
         }
     })
 
+    useEffect(() => {
+        if (mode === 'edit' && formData) {
+            dispatch({ type: 'UPDATE_BY_EDIT', payload: formData })
+        }
+    }, [mode, formData])
+
     const changeHandler = (event: ChangeEvent<HTMLInputElement>) => {
+        setNoChangeError(false)
         const { name, value } = event.target;
         if (name === 'mobile' && !(/^[0-9]+$/.test(value))) {
             setErrors(prevErrors => ({
@@ -94,12 +110,24 @@ const AddUser = () => {
         }));
     };
 
-    const { mutate, reset, isPending } = useMutation({
+    const { mutate: addMutate, reset: addReset, isPending: addpending } = useMutation({
         mutationFn: (payload) => addStaff(payload),
         onSuccess: () => {
             dispatch({ type: 'RESET' })
             toast.success('User added succsufully')
-            reset();
+            addReset();
+        },
+        onError: (err) => {
+            toast.error(`Failed to add the user: ${err.message}`)
+        },
+    })
+
+    const { mutate: editMutate, reset: editReset, isPending: editpending } = useMutation({
+        mutationFn: (payload) => editStaff(payload),
+        onSuccess: () => {
+            dispatch({ type: 'RESET' })
+            toast.success('User updated succsufully')
+            editReset();
         },
         onError: (err) => {
             toast.error(`Failed to add the user: ${err.message}`)
@@ -169,13 +197,31 @@ const AddUser = () => {
         e.preventDefault()
         const isValid = validateUIFields()
         if (isValid) {
-            mutate(state)
+            if (mode === 'add') {
+                addMutate(state)
+            } else if (mode === 'edit') {
+                function areObjectsEqualByStringify(formData: any, updatedData: any) {
+                    const keys = Object.keys(formData)
+                    for (let key of keys) {
+                        if (updatedData[key] !== formData[key]) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                if (!areObjectsEqualByStringify(formData, state)) {
+                    editMutate({...state, editingUserId})
+                } else {
+                    setNoChangeError(true)
+                }
+            }
         }
     }
     return (
         <div className="rounded-lg p-6 shadow-md m-3 bg-white">
-            {isPending && <Loader size={40} thickness={4} fullScreen={false} msg="Please wait while we\'re Loading"/>}
+            {(addpending || editpending) && <Loader size={40} thickness={4} fullScreen={false} msg="Please wait while we\'re Loading" />}
             <h2 className="text-2xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5">Add an User</h2>
+            {noChangeError && <ShowErrorBanner msg="It looks like no details were changed. To update the user, please make some modifications." />}
             <form onSubmit={submitHandler}>
                 <Grid container spacing={3} margin={3}>
 
@@ -270,7 +316,7 @@ const AddUser = () => {
                 </Grid>
 
                 <div className="flex justify-end mx-6">
-                    <MuiButton btnType='submit' variant="contained">Add user</MuiButton>
+                    <MuiButton btnType='submit' variant="contained">{mode === 'edit' ? 'Edit' : 'Add'} user</MuiButton>
 
                 </div>
             </form>

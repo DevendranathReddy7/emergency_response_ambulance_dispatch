@@ -40,6 +40,19 @@ export const addStaff = async (payload: any) => {
     }
 };
 
+export const editStaff = async (payload: any) => {
+    try {
+        const response = await axios.put('http://localhost:7000/api/update-staff', payload);
+        return response.data;
+    } catch (error: any) {
+        if (error.response && error.response.data && error.response.data.error) {
+            throw new Error(error.response.data.error);
+        } else {
+            throw new Error(error.message || 'Failed to add the user');
+        }
+    }
+};
+
 export const getAvailableCrewStaff = async (role = 'erStaff', status = 'active') => {
     try {
         return await axios.get(`http://localhost:7000/api/get-staff/?role=${role}&status=${status}`)

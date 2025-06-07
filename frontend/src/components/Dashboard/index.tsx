@@ -66,7 +66,7 @@ const Dashboard = () => {
     const handleEditCase = (id: string) => {
 
         const filteredObj = data?.updatedEmeregencies.filter((obj: any) => {
-            return obj._doc._id == id;
+            return obj._doc._id === id;
         });
 
         const { incidentLocation, emergencyType, priority, status } = filteredObj[0]._doc;

@@ -5,6 +5,7 @@ import DynamicTable from "../../common/components/Table";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import BasicModal from "../../common/components/Modal";
+import { useNavigate } from "react-router-dom";
 
 interface RawStaffMember {
     _id: string;
@@ -44,6 +45,7 @@ const deleteWarning = {
 
 const UsersList = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false)
+    const navigate = useNavigate()
     const [currentDeletingUser, setCurrentDeletingUser] = useState<string>('')
 
     const { data, isLoading, isError, error } = useQuery({
@@ -61,19 +63,34 @@ const UsersList = () => {
 
     const handleEditUser = (id: string) => {
 
+        const filteredObj = data?.data?.data?.filter((obj: any) => {
+            return obj._id === id;
+        });
+
+        const { address, age, email, gender, mobile, name, role, status } = filteredObj[0]
+
+        navigate(`/edit-user/${id}`, {
+            state: {
+                mode: 'edit',
+                formData: {
+                    address, age, email, gender, mobile, name, role, status
+                }
+            }
+        })
+
     }
 
     const handleModal = () => {
         setIsOpen(false)
     }
 
-    const { mutate: deleteMutate, reset: deleteReset, isPending:deletePending } = useMutation({
+    const { mutate: deleteMutate, reset: deleteReset, isPending: deletePending } = useMutation({
         mutationFn: () => deleteTheUser(currentDeletingUser),
         onSuccess: () => {
             toast.success('User is Successfully deleted')
             deleteReset()
         },
-        onError:()=>{
+        onError: () => {
             toast.error('Failed to delete the user')
             deleteReset()
         }
