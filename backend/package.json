@@ -12,6 +12,7 @@
   "description": "",
   "devDependencies": {
     "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.23",
     "dotenv": "^16.5.0",
     "eslint": "^9.27.0",
@@ -24,7 +25,9 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1"
   }
 }

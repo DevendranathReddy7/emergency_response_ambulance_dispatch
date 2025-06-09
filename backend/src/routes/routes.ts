@@ -2,10 +2,12 @@ import { addAmbulance, deleteAmbulance, getAmbulance } from "../controllers/addG
 import { addStaff, getCrewMembers, deleteStaff, editStaff } from "../controllers/Staff"
 import { emergencyLogger, updateEmergency } from "../controllers/emergencyLogger"
 import getEmergencies from "../controllers/getEmergencies"
+import Login from "../controllers/login"
 
 const express = require('express')
 const router = express.Router()
 
+router.post('/login', Login)
 router.post('/log-emergency', emergencyLogger)
 router.put('/update-emergency', updateEmergency)
 router.get('/get-emergency', getEmergencies)

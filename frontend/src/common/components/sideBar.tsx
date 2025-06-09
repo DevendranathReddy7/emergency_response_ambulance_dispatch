@@ -51,7 +51,11 @@ const NavLinks = [
                 id: 'view_cases'
             }
         ]
-    },
+    }, {
+        type: 'single',
+        mainLinkName: 'Logout',
+        id: 'logout',
+    }
 ];
 
 const SideBar = () => {
@@ -86,7 +90,7 @@ const SideBar = () => {
                         >
                             <button className="flex items-center justify-between w-full text-white p-2 rounded bg-blue-800 hover:bg-blue-400 focus:outline-none">
                                 {navItem.mainLinkName}
-                                <svg
+                                {navItem.type === 'dropdown' && <svg
                                     className={`ml-2 h-4 w-4 transition-transform duration-200 ${openDropdown === navItem.id ? 'rotate-180' : ''}`}
                                     fill="none"
                                     stroke="currentColor"
@@ -94,7 +98,7 @@ const SideBar = () => {
                                     xmlns="http://www.w3.org/2000/svg"
                                 >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
+                                </svg>}
                             </button>
 
                             <div
@@ -104,7 +108,7 @@ const SideBar = () => {
                                     ${isMobileMenu ? 'relative ml-4 mt-2' : 'right-0 mt-2 bg-white shadow-lg rounded-md w-48 py-1 z-20'}
                                 `}
                             >
-                                {navItem.dropdownItems.map((dropdownItem) => (
+                                {navItem && navItem.dropdownItems && navItem.dropdownItems.map((dropdownItem) => (
                                     <NavLink
                                         key={dropdownItem.id}
                                         to={dropdownItem.linkTo}

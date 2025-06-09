@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAvailableAmbulances, getAvailableCrewStaff } from "../../common/services/api";
 import type { AmbulanceData } from "../../dataModals/Common";
 import { toast } from "react-toastify";
-import ShowErrorBanner from "../../common/components/ShowErrorBanner";
+import ShowBanner from "../../common/components/ShowBanner";
 //import MuiButton from "../../common/components/MuiButton";
 
 
@@ -104,8 +104,8 @@ const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance, prevCrew
     return (
         <React.Fragment>
             <h2 className="text-2xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5">Case Details</h2>
-            {(isAmbulanceError || ambulanceData?.data?.data?.length === 0) && <ShowErrorBanner msg="We currently don't have any ambulances available Please try other transportation options to get the patient to the hospital" />}
-            {(isCrewError || crewData?.data?.data?.length === 0) && <ShowErrorBanner msg="We currently don't have any staff available to assign.." />}
+            {(isAmbulanceError || ambulanceData?.data?.data?.length === 0) && <ShowBanner type='warning' msg="We currently don't have any ambulances available Please try other transportation options to get the patient to the hospital" />}
+            {(isCrewError || crewData?.data?.data?.length === 0) && <ShowBanner type="warning" msg="We currently don't have any staff available to assign.." />}
             <Grid container spacing={3} margin={3}>
                 <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
                     <DropDown

@@ -196,7 +196,6 @@ export const emergencyLogger = async (req: Request, res: Response, next: NextFun
     }
 };
 
-
 export const updateEmergency = async (req: Request, res: Response, next: NextFunction) => {
     const { emergencyType, incidentLocation, priority, ambulanceId, crewMembers, patientName, patientAge, patientMobile, patientGender, patientAddress, caseStatus, editingDocId } = req.body;
 

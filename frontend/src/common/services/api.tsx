@@ -1,5 +1,18 @@
 import axios from "axios"
 
+export const login = async (payload: any) => {
+    try {
+        const response = await axios.post('http://localhost:7000/api/login', payload);
+        return response.data;
+    } catch (error: any) {
+        if (error?.response?.data?.message) {
+            throw new Error(error.response.data.message);
+        } else {
+            throw new Error(error.message || 'Failed to log you in..please try again in sometime!');
+        }
+    }
+}
+
 export const addAmbulance = async (payload: any) => {
     try {
         const response = await axios.post('http://localhost:7000/api/add-ambulance', payload);
@@ -13,7 +26,7 @@ export const addAmbulance = async (payload: any) => {
     }
 };
 
-export const getAvailableAmbulances = async (query ='Available') => {
+export const getAvailableAmbulances = async (query = 'Available') => {
     try {
         return await axios.get(`http://localhost:7000/api/get-ambulance?type=${query}`)
 
@@ -27,13 +40,13 @@ export const getAvailableAmbulances = async (query ='Available') => {
 
 }
 
-export const deleteAmbulance = async (ambulanceId:string) => {
+export const deleteAmbulance = async (ambulanceId: string) => {
     try {
         return await axios.delete(`http://localhost:7000/api/delete-ambulance/?ambulanceId=${ambulanceId}`)
 
     } catch (error: any) {
         console.log(error)
-        if (error.response ) {
+        if (error.response) {
             throw new Error(error.response.data.message);
         } else {
             throw new Error(error.message || 'Failed to delete the Ambulance')
@@ -82,7 +95,7 @@ export const getAvailableCrewStaff = async (role = 'erStaff', status = 'active')
 
 }
 
-export const deleteTheUser = async (userId:string) => {
+export const deleteTheUser = async (userId: string) => {
     try {
         return await axios.delete(`http://localhost:7000/api/delete-staff/?userId=${userId}`)
 

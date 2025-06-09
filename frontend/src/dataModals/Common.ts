@@ -34,7 +34,7 @@ export interface buttonProps {
   variant: 'contained' | 'outlined' | 'text' | 'danger'
   btnType: 'submit' | 'button'
   children: React.ReactNode
-  handleBtnClick?: (val:any) => void
+  handleBtnClick?: (val: any) => void
   disable?: boolean
 }
 
@@ -57,6 +57,12 @@ export interface UserState {
   role: string;
   age: string;
 }
+
+export interface LoginState {
+  email: string;
+  password: string
+}
+
 
 export interface ModalProps {
   isOpen: boolean

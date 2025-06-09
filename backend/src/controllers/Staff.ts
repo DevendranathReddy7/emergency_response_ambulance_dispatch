@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import user from "../models/user"; 
+import user from "../models/user";
 import { roles, staffRoles } from "../common/constants";
-import mongoose from "mongoose"; 
+import mongoose from "mongoose";
+const bcrypt = require('bcryptjs');
 
 export interface CrewQueryParams {
     role?: string;
@@ -37,7 +38,7 @@ const validateUIFields = (email: string, name: string, role: string, mobile: str
         }
     }
 
-    return null; 
+    return null;
 };
 
 
@@ -64,15 +65,16 @@ export const addStaff = async (req: Request, res: Response, next: NextFunction) 
             ...req.body
         });
 
-        
-        if (!staffRoles.includes(role)) {
-            newUserObject.password = name.slice(0, 4) + Math.floor(Math.random() * 1000);
+        const tempPassword = name.slice(0, 4) + Math.floor(Math.random() * 1000);
+
+        if (staffRoles.includes(role)) {
+            newUserObject.password = await bcrypt.hash(tempPassword, 10)
         }
 
         const savedUser = await newUserObject.save();
 
-       
-        res.status(201).json({ message: 'Staff added successfully', data: { userId: savedUser._id, generatedPassword: newUserObject.password } });
+
+        res.status(201).json({ message: 'Staff added successfully', data: { userId: savedUser._id, email: email, generatedPassword: tempPassword } });
 
     } catch (e: any) {
         console.error('Failed to add the member due to a server error:', e.message);
@@ -96,7 +98,7 @@ export const getCrewMembers = async (req: Request, res: Response, next: NextFunc
                 case 'admin':
                     query.role = 'Admin';
                     break;
-                case 'patient': 
+                case 'patient':
                     query.role = 'Patient';
                     break;
                 default:
@@ -107,7 +109,7 @@ export const getCrewMembers = async (req: Request, res: Response, next: NextFunc
         if (typeof status === 'string') {
             const lowerCaseStatus = status.toLowerCase();
             if (lowerCaseStatus === 'active' || lowerCaseStatus === 'inactive') {
-                query.status = status; 
+                query.status = status;
             } else if (lowerCaseStatus !== 'all') {
                 return res.status(400).json({ message: `Invalid status specified: "${status}". Allowed statuses are: Active, Inactive, all.` });
             }
@@ -167,7 +169,7 @@ export const editStaff = async (req: Request, res: Response, next: NextFunction)
             return res.status(404).json({ message: 'User not found for update.' });
         }
 
-       
+
         if (staffRoles.includes(role) && email && email !== existingUser.email) {
             const isEmailTaken = await user.findOne({ email });
             if (isEmailTaken) {
@@ -187,11 +189,11 @@ export const editStaff = async (req: Request, res: Response, next: NextFunction)
             ...(staffRoles.includes(role) && email && { email }),
         };
 
-        
+
         const updatedUser = await user.findByIdAndUpdate(
             editingUserId,
             { $set: updateFields },
-            { new: true, runValidators: true } 
+            { new: true, runValidators: true }
         );
 
         if (!updatedUser) {

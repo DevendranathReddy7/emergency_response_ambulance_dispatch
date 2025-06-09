@@ -24,4 +24,5 @@ export const caseStatus = ["Assigned", "On the Way", "On Scene", "At Hospital", 
 export const gender = ['Male', 'Female']
 export const roles = ['Admin', 'Emergency response staff', 'Triage staff']
 export const ambulanceType = ['Basic', 'ICU', 'Neonatal'];
+export const shiftType = ['Morning', 'After Noon', 'Night', 'Emergency Override', "Off Shift", "Leave"]
 

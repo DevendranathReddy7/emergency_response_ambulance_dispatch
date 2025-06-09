@@ -2,7 +2,7 @@ import { Grid } from "@mui/material"
 import Input from "../../common/components/Input"
 import { useEffect, useReducer, useState, type ChangeEvent, type FormEvent } from "react"
 import DropDown from "../../common/components/Dropdown"
-import { gender, roles } from "../../common/constants/constants"
+import { gender, roles, shiftType } from "../../common/constants/constants"
 import type { UserState } from "../../dataModals/Common"
 import MuiButton from "../../common/components/MuiButton"
 import { useMutation } from "@tanstack/react-query"
@@ -10,7 +10,7 @@ import { addStaff, editStaff } from "../../common/services/api"
 import Loader from "../../common/components/Loader"
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from "react-router-dom"
-import ShowErrorBanner from "../../common/components/ShowErrorBanner"
+import ShowBanner from "../../common/components/ShowBanner"
 
 // type UserAction =
 //     | { type: "UPDATE_FIELD"; name: keyof UserState; value: any };
@@ -23,6 +23,7 @@ const initialState = {
     address: "",
     role: "",
     age: "",
+    shiftType: 'Morning'
 };
 
 const reducer = (state: any, action: any) => {
@@ -42,6 +43,7 @@ const AddUser = () => {
 
     const [state, dispatch] = useReducer(reducer, initialState)
     const [noChangeError, setNoChangeError] = useState<boolean>(false)
+    const [response, setResponse] = useState({ userId: '', email: '', generatedPassword: "" })
     const location = useLocation()
     const { id: editingUserId } = useParams()
     const { mode = 'add', formData = {} } = location.state || {}
@@ -74,8 +76,24 @@ const AddUser = () => {
         address: {
             error: false,
             message: 'Address is Required'
+        },
+        shiftType: {
+            error: false,
+            message: 'Shift Type is Required'
         }
     })
+
+    useEffect(() => {
+        if (mode === 'add') {
+            dispatch({ type: 'RESET' })
+        }
+    }, [mode])
+
+    useEffect(() => {
+        setTimeout(() => {
+            setResponse({ userId: '', email: '', generatedPassword: "" })
+        }, 20000)
+    }, [response])
 
     useEffect(() => {
         if (mode === 'edit' && formData) {
@@ -112,9 +130,10 @@ const AddUser = () => {
 
     const { mutate: addMutate, reset: addReset, isPending: addpending } = useMutation({
         mutationFn: (payload) => addStaff(payload),
-        onSuccess: () => {
+        onSuccess: (data) => {
             dispatch({ type: 'RESET' })
             toast.success('User added succsufully')
+            setResponse(data.data)
             addReset();
         },
         onError: (err) => {
@@ -171,8 +190,13 @@ const AddUser = () => {
             newErrors.mobile = { error: true, message: 'Mobile number is Required' };
             isValid = false;
         } else {
-            // might want to add mobile number validation here (e.g., length)
-            newErrors.mobile.error = false;
+            if (state.mobile.length !== 10) {
+                newErrors.mobile = { error: true, message: 'Mobile number should contain exactly 10 digits' };
+                isValid = false;
+            } else {
+                newErrors.mobile.error = false;
+
+            }
         }
 
         if (!state.role) {
@@ -187,6 +211,14 @@ const AddUser = () => {
             isValid = false;
         } else {
             newErrors.address.error = false;
+        }
+
+        if (mode === 'edit' && !state.shiftType) {
+            newErrors.shiftType = { error: true, message: 'Shift type is Required' };
+            isValid = false;
+        } else {
+            newErrors.shiftType.error = false;
+
         }
 
         setErrors(newErrors);
@@ -210,18 +242,20 @@ const AddUser = () => {
                     return true;
                 }
                 if (!areObjectsEqualByStringify(formData, state)) {
-                    editMutate({...state, editingUserId})
+                    editMutate({ ...state, editingUserId })
                 } else {
                     setNoChangeError(true)
                 }
             }
         }
     }
+
     return (
         <div className="rounded-lg p-6 shadow-md m-3 bg-white">
             {(addpending || editpending) && <Loader size={40} thickness={4} fullScreen={false} msg="Please wait while we\'re Loading" />}
+            {response.email && <ShowBanner type='info' msg={`Please use ${response.email} as EMAIL and ${response.generatedPassword} as PASSWORD to Log into application.`} />}
             <h2 className="text-2xl/3 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight mx-5">Add an User</h2>
-            {noChangeError && <ShowErrorBanner msg="It looks like no details were changed. To update the user, please make some modifications." />}
+            {noChangeError && <ShowBanner type='error' msg="It looks like no details were changed. To update the user, please make some modifications." />}
             <form onSubmit={submitHandler}>
                 <Grid container spacing={3} margin={3}>
 
@@ -313,6 +347,18 @@ const AddUser = () => {
                             helperText={errors.address?.message}
                         />
                     </Grid>
+
+                    {mode === 'edit' && <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
+                        <DropDown
+                            fieldName="Shift Type"
+                            name="shift_type"
+                            menuItems={shiftType}
+                            value={state.shift_type}
+                            selectHandle={selectHandler}
+                            error={errors.shiftType?.error}
+                            helperText={errors.shiftType?.message}
+                        />
+                    </Grid>}
                 </Grid>
 
                 <div className="flex justify-end mx-6">

@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import AddEmergency from "./components/AddEmergency";
 import AddUser from "./components/User";
 import Dashboard from './components/Dashboard'
@@ -7,6 +7,11 @@ import { ToastContainer } from "react-toastify";
 import AddAmbulance from "./components/AddAmbulances";
 import UsersList from "./components/User/UserList";
 import ViewAmbulances from "./components/AddAmbulances/ViewAmbulances";
+import Login from "./components/Login";
+import { AuthProvider } from "./common/context/AuthContext";
+import NotFound from "./common/components/NotFound";
+import { useMemo } from 'react';
+
 
 function HiddenTailwindClasses() {
   return (
@@ -21,26 +26,46 @@ function HiddenTailwindClasses() {
   );
 }
 
-function App() {
+const ShowRoutes = () => {
+  const location = useLocation();
+  const showSidebar = location.pathname !== '/login';
+
+  const hasAccess = useMemo(() => {
+    return !!localStorage.getItem('authToken');
+  }, []);
 
   return (
-
-    <BrowserRouter >
-      <SideBar />
+    <>
+      {showSidebar && <SideBar />}
       <HiddenTailwindClasses />
       <ToastContainer />
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/log-emergency" element={<AddEmergency />} />
-        <Route path="/add-user" element={<AddUser />} />
-        <Route path="/edit-user/:id" element={<AddUser />} />
-        <Route path="/view-user" element={<UsersList />} />
-        <Route path="/update-caseDetails/:id" element={<AddEmergency />} />
-        <Route path="/add-ambulance" element={<AddAmbulance />} />
-        <Route path="/view-ambulance" element={<ViewAmbulances />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={hasAccess ? <Dashboard /> : <NotFound />} />
+        <Route path="/log-emergency" element={hasAccess ? <AddEmergency /> : <NotFound />} />
+        <Route path="/add-user" element={hasAccess ? <AddUser /> : <NotFound />} />
+        <Route path="/edit-user/:id" element={hasAccess ? <AddUser /> : <NotFound />} />
+        <Route path="/view-user" element={hasAccess ? <UsersList /> : <NotFound />} />
+        <Route path="/update-caseDetails/:id" element={hasAccess ? <AddEmergency /> : <NotFound />} />
+        <Route path="/add-ambulance" element={hasAccess ? <AddAmbulance /> : <NotFound />} />
+        <Route path="/view-ambulance" element={hasAccess ? <ViewAmbulances /> : <NotFound />} />
       </Routes>
+    </>
+  );
+};
+
+
+function App() {
+  return (
+
+    <BrowserRouter >
+      <AuthProvider>
+        <ShowRoutes />
+      </AuthProvider>
     </BrowserRouter>
   )
 }
+
+
 
 export default App
