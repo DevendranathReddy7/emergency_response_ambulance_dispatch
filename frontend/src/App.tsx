@@ -6,6 +6,7 @@ import SideBar from "./common/components/sideBar";
 import { ToastContainer } from "react-toastify";
 import AddAmbulance from "./components/AddAmbulances";
 import UsersList from "./components/User/UserList";
+import ViewAmbulances from "./components/AddAmbulances/ViewAmbulances";
 
 function HiddenTailwindClasses() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/view-user" element={<UsersList />} />
         <Route path="/update-caseDetails/:id" element={<AddEmergency />} />
         <Route path="/add-ambulance" element={<AddAmbulance />} />
+        <Route path="/view-ambulance" element={<ViewAmbulances />} />
       </Routes>
     </BrowserRouter>
   )

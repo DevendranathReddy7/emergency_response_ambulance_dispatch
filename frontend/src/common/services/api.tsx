@@ -13,15 +13,30 @@ export const addAmbulance = async (payload: any) => {
     }
 };
 
-export const getAvailableAmbulances = async () => {
+export const getAvailableAmbulances = async (query ='Available') => {
     try {
-        return await axios.get('http://localhost:7000/api/get-ambulance')
+        return await axios.get(`http://localhost:7000/api/get-ambulance?type=${query}`)
 
     } catch (error: any) {
         if (error.response && error.response.data && error.response.data.error) {
             throw new Error(error.response.data.error);
         } else {
             throw new Error(error.message || 'Failed to fetch avaialble ambulances')
+        }
+    }
+
+}
+
+export const deleteAmbulance = async (ambulanceId:string) => {
+    try {
+        return await axios.delete(`http://localhost:7000/api/delete-ambulance/?ambulanceId=${ambulanceId}`)
+
+    } catch (error: any) {
+        console.log(error)
+        if (error.response ) {
+            throw new Error(error.response.data.message);
+        } else {
+            throw new Error(error.message || 'Failed to delete the Ambulance')
         }
     }
 

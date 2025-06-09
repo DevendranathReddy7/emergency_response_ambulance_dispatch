@@ -29,13 +29,13 @@ const CaseDetails = ({ errors, state, updateField, flow, prevAmbulance, prevCrew
 
     const { data: ambulanceData, isLoading: isAmbulanceLoading, isError: isAmbulanceError } = useQuery({
         queryKey: ['get-ambulances'],
-        queryFn: getAvailableAmbulances,
+        queryFn: ()=>getAvailableAmbulances('Available'),
         staleTime: 1 * 60 * 1000,
     });
 
     const { data: crewData, isLoading: isCrewLoading, isError: isCrewError } = useQuery({
         queryKey: ['get-crew'],
-        queryFn: () => getAvailableCrewStaff('erStaff', 'active'),
+        queryFn: () => getAvailableCrewStaff('erStaff', 'Active'),
         staleTime: 1 * 60 * 1000,
 
     });
