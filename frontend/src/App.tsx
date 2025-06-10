@@ -8,9 +8,10 @@ import AddAmbulance from "./components/AddAmbulances";
 import UsersList from "./components/User/UserList";
 import ViewAmbulances from "./components/AddAmbulances/ViewAmbulances";
 import Login from "./components/Login";
-import { AuthProvider } from "./common/context/AuthContext";
 import NotFound from "./common/components/NotFound";
 import { useMemo } from 'react';
+import { Provider } from "react-redux";
+import { store } from "./store/store";
 
 
 function HiddenTailwindClasses() {
@@ -59,9 +60,9 @@ function App() {
   return (
 
     <BrowserRouter >
-      <AuthProvider>
+      <Provider store={store}>
         <ShowRoutes />
-      </AuthProvider>
+      </Provider>
     </BrowserRouter>
   )
 }

@@ -1,6 +1,6 @@
 import { Grid } from "@mui/material"
 import Input from "../../common/components/Input"
-import { useContext, useReducer, useState, type ChangeEvent, type FormEvent } from "react";
+import { useReducer, useState, type ChangeEvent, type FormEvent } from "react";
 import type { LoginState } from "../../dataModals/Common";
 import MuiButton from "../../common/components/MuiButton";
 import { useMutation } from "@tanstack/react-query";
@@ -8,7 +8,8 @@ import { login } from "../../common/services/api";
 import { toast } from "react-toastify";
 import Loader from "../../common/components/Loader";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../common/context/AuthContext";
+import { loginError, loginRequest, loginSuccess } from "../../store/reducers/authSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const initialState = {
     email: '',
@@ -27,8 +28,8 @@ const reducer = (state: any, action: any) => {
 
 const Login = () => {
     const navigate = useNavigate()
-    const { userLogin }:any = useContext(AuthContext);
-
+    const dispatchToStore = useDispatch()
+    const { loading, error, userData } = useSelector((state: any) => state.auth)
     const [errors, setErrors] = useState({
         email: {
             error: false,
@@ -77,16 +78,16 @@ const Login = () => {
         return isValid
     }
 
-    const { mutate, isPending, reset } = useMutation({
+    const { mutate, reset } = useMutation({
         mutationFn: (payload) => login(payload),
-        onSuccess: (data:any) => {
-            console.log(data)
+        onSuccess: (data: any) => {
+            dispatchToStore(loginSuccess(data))            
             toast.success('Welcome Back!')
-            userLogin(JSON.stringify(data.token))
             navigate('/')
             reset()
         },
         onError: (data) => {
+            dispatchToStore(loginError(data))
             toast.error(data.message)
         }
     })
@@ -95,6 +96,7 @@ const Login = () => {
         e.preventDefault()
         const isValid = validateUiFields()
         if (isValid) {
+            dispatchToStore(loginRequest())
             mutate(state)
         }
 
@@ -102,7 +104,7 @@ const Login = () => {
     return (
         <Grid container alignItems={'center'} justifyContent={"center"} className={'min-h-screen'}>
             <Grid size={{ xs: 8, md: 5 }} className={'shadow-md rounded-lg p-6'}>
-                {isPending && <Loader thickness={4} size={40} fullScreen={false} msg="Please wait while we verify you" />}
+                {loading && <Loader thickness={4} size={40} fullScreen={false} msg="Please wait while we verify you" />}
                 <h1 className="text-center font-bold text-xl">Login</h1>
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3} margin={3}>
